@@ -5,7 +5,7 @@ object Form1: TForm1
   object lnkOlvide: TWebLinkLabel
     Left = 0
     Top = 0
-    Width = 121
+    Width = 3
     Height = 15
     ElementID = 'lnkOlvide'
     ElementFont = efCSS
@@ -32,7 +32,7 @@ object Form1: TForm1
   object lblError: TWebLabel
     Left = 303
     Top = 0
-    Width = 95
+    Width = 3
     Height = 15
     ElementID = 'lblError'
     ElementFont = efCSS

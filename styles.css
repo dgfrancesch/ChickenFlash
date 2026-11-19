@@ -1,12 +1,21 @@
-﻿/* ===== 1. FUENTES (archivos en fonts/; si faltan, usa la fuente del sistema) ===== */
-@font-face {
+﻿@font-face {
   font-family: 'Plus Jakarta Sans';
-  src: url('fonts/PlusJakartaSans.woff2') format('woff2');
+  src: url('Fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
   font-weight: 200 800; font-style: normal; font-display: swap;
 }
 @font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('Fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 800; font-style: italic; font-display: swap;
+}
+@font-face {
   font-family: 'Radio Canada Big';
-  src: url('fonts/RadioCanadaBig.woff2') format('woff2');
+  src: url('Fonts/RadioCanadaBig-VariableFont_wght.ttf') format('truetype');
+  font-weight: 400 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Radio Canada Big';
+  src: url('Fonts/RadioCanadaBig-Italic-VariableFont_wght.ttf') format('truetype');
   font-weight: 400 700; font-style: normal; font-display: swap;
 }
 
@@ -20,12 +29,12 @@
   --warning: #D97706;
   --error: #DC2626;
 
-  --primary: #EF4444;
-  --on-primary: #3C0909;
+--primary: #EF4444;
+--on-primary: #FFFFFF;
   --primary-container: #7F1D1D;
   --on-primary-container: #FEE2E2;
-  --secondary: #FACC15;
-  --on-secondary: #422006;
+--secondary: #EAB308;
+--on-secondary: #422006;
   --secondary-container: #713F12;
   --on-secondary-container: #FEF08A;
 
@@ -238,13 +247,17 @@ button, input { font-family: inherit; }
 .caja--clave input { padding-right: 46px; }
 .caja input::placeholder { color: var(--outline); }
 .caja input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary);
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.18);
 }
 .caja input:-webkit-autofill {
   -webkit-text-fill-color: var(--on-surface);
   -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
   caret-color: var(--on-surface);
+}
+.caja input.invalida {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px var(--error-bg);
 }
 @media (pointer: coarse) { .caja input { font-size: 16px; } }
 
