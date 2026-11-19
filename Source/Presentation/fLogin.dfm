@@ -1,42 +1,117 @@
 object Form1: TForm1
   Width = 640
   Height = 480
-  object lblError: TWebLabel
-    Left = 235
-    Top = 312
-    Width = 102
+  OnCreate = WebFormCreate
+  object lnkOlvide: TWebLinkLabel
+    Left = 0
+    Top = 0
+    Width = 121
     Height = 15
+    ElementID = 'lnkOlvide'
+    ElementFont = efCSS
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
   end
-  object edtUsuario: TWebEdit
-    Left = 208
-    Top = 144
-    Width = 121
-    Height = 22
+  object titulo: TWebLabel
+    Left = 101
+    Top = 0
+    Width = 69
+    Height = 15
+    Caption = 'Iniciar Sesi'#243'n'
+    ElementClassName = 'titulo'
+    ElementID = 'titulo'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
     HeightPercent = 100.000000000000000000
-    Text = 'edtUsuario'
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object lblError: TWebLabel
+    Left = 303
+    Top = 0
+    Width = 95
+    Height = 15
+    ElementID = 'lblError'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
   object edtClave: TWebEdit
-    Left = 208
-    Top = 184
-    Width = 121
-    Height = 22
-    ChildOrder = 1
+    Left = 202
+    Top = 0
+    Width = 96
+    Height = 25
+    ChildOrder = 2
+    ElementID = 'edtClave'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
     HeightPercent = 100.000000000000000000
-    Text = 'edtUsuario'
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object btnCrear: TWebButton
+    Left = 404
+    Top = -4
+    Width = 96
+    Height = 25
+    ChildOrder = 4
+    ElementID = 'btnCrear'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
   object btnEntrar: TWebButton
-    Left = 233
-    Top = 240
+    Left = 505
+    Top = 0
     Width = 96
     Height = 25
-    Caption = 'btnEntrar'
-    ChildOrder = 2
+    ChildOrder = 5
+    ElementID = 'btnEntrar'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
     HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
     OnClick = btnEntrarClick
+  end
+  object btnVer: TWebButton
+    Left = 0
+    Top = 30
+    Width = 96
+    Height = 25
+    ChildOrder = 6
+    ElementID = 'btnVer'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+    OnClick = btnVerClick
+  end
+  object edtUsuario: TWebEdit
+    Left = 100
+    Top = 31
+    Width = 96
+    Height = 25
+    ChildOrder = 7
+    ElementID = 'edtUsuario'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
   end
 end

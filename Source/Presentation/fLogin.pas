@@ -4,16 +4,24 @@ interface
 
 uses
   System.SysUtils, System.Classes, JS, Web, WEBLib.Graphics, WEBLib.Controls,
-  WEBLib.Forms, WEBLib.Dialogs, Vcl.Controls, Vcl.StdCtrls, WEBLib.StdCtrls;
+  WEBLib.Forms, WEBLib.Dialogs, Vcl.Controls, Vcl.StdCtrls, WEBLib.StdCtrls,
+  WEBLib.ExtCtrls,DateUtils;
 
 type
   TForm1 = class(TWebForm)
-    edtUsuario: TWebEdit;
+    lnkOlvide: TWebLinkLabel;
+
+    titulo: TWebLabel;
     edtClave: TWebEdit;
-    btnEntrar: TWebButton;
     lblError: TWebLabel;
+    btnCrear: TWebButton;
+    btnEntrar: TWebButton;
+    btnVer: TWebButton;
+    edtUsuario: TWebEdit;
     [async]
     procedure btnEntrarClick(Sender: TObject);
+    procedure btnVerClick(Sender: TObject);
+    procedure WebFormCreate(Sender: TObject);
   private
     { Private declarations }
   public
@@ -30,18 +38,34 @@ implementation
 uses
   uAuthService;
 
+procedure TForm1.btnVerClick(Sender: TObject);
+begin
+  if edtClave.ElementHandle.getAttribute('type') = 'password' then
+    edtClave.ElementHandle.setAttribute('type', 'text')
+  else
+    edtClave.ElementHandle.setAttribute('type', 'password');
+end;
+
+procedure TForm1.WebFormCreate(Sender: TObject);
+begin
+  document.getElementById('footer').innerHTML :=
+    '&copy; ' + IntToStr(YearOf(Now)) + ' Chicken Flash • Sistema de Punto de Venta e Inventario';
+end;
+
 procedure TForm1.btnEntrarClick(Sender: TObject);
 var
   R: TAuthResult;
 begin
   lblError.Caption := '';
   btnEntrar.Enabled := False;
+  try
+    R := await(TAuthResult, TAuthService.Login(edtUsuario.Text, edtClave.Text));
+  finally
+    btnEntrar.Enabled := True;
+  end;
 
-  R := await(TAuthResult, TAuthService.Login(edtUsuario.Text, edtClave.Text));
-
-  btnEntrar.Enabled := True;
   if R.Ok then
-    lblError.Caption := 'Entró bien'   // aquí luego abrimos la pantalla principal
+    lblError.Caption := 'Entró bien'
   else
     lblError.Caption := R.Mensaje;
 end;

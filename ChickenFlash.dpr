@@ -2,6 +2,8 @@ program ChickenFlash;
 
 
 
+{$R *.dres}
+
 uses
   Vcl.Forms,
   WEBLib.Forms,

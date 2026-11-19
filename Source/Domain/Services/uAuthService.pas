@@ -25,6 +25,7 @@ implementation
 uses
   WEBLib.JSON, uConfig, uHttp, uSession;
 
+ [async]
 class function TAuthService.Login(const Usuario, Clave: string): TAuthResult;
 var
   J: TJSONObject;
