@@ -8,11 +8,13 @@ uses
 type
   TNavegacion = class
   private
-    class var FActual: TWebForm;
+    class var FEscuchando: Boolean;
   public
-    class procedure Registrar(AForm: TWebForm);   // el formulario que está en pantalla
+    class procedure Registrar(AForm: TWebForm);
     class procedure IrA(AClase: TWebFormClass);
-    class procedure Iniciar;                      // arranca el shell y conecta los destinos
+    class function RutaActual: string;                 // lee #/ruta (por defecto 'vender')
+    class procedure IrARuta(const ARuta: string; AReemplazar: Boolean = False);
+    class procedure Iniciar;
   end;
 
 implementation
@@ -20,16 +22,52 @@ implementation
 uses
   uShell, fDashboard, fInventory;
 
+function ClasePorRuta(const ARuta: string): TWebFormClass;
+begin
+  if ARuta = 'vender' then Result := TForm2
+  else if ARuta = 'inventario' then Result := TForm3
+  else Result := nil;
+end;
+
+function AlCambiarHash(Event: TJSEvent): Boolean;
+var
+  Clase: TWebFormClass;
+begin
+  Result := True;
+  Clase := ClasePorRuta(TNavegacion.RutaActual);
+  if Clase <> nil then
+    TNavegacion.IrA(Clase);          // el formulario nuevo marca su pestaña en WebFormCreate
+end;
+
 class procedure TNavegacion.Registrar(AForm: TWebForm);
 begin
   TShell.Actual := AForm;
+end;
+
+class function TNavegacion.RutaActual: string;
+var
+  H: string;
+begin
+  H := window.location.hash;
+  if Copy(H, 1, 2) = '#/' then
+    Result := Copy(H, 3, 50)
+  else
+    Result := 'vender';
+end;
+
+class procedure TNavegacion.IrARuta(const ARuta: string; AReemplazar: Boolean);
+begin
+  if AReemplazar then
+    window.history.replaceState(nil, '', '#/' + ARuta)   // no añade historial ni dispara hashchange
+  else
+    window.location.hash := '/' + ARuta;                   // añade historial y dispara hashchange
 end;
 
 class procedure TNavegacion.IrA(AClase: TWebFormClass);
 var
   Anterior: TWebForm;
 
-    procedure AlCrear(AForm: TObject);
+  procedure AlCrear(AForm: TObject);
   begin
     if Anterior <> nil then
       Anterior.Free;
@@ -48,13 +86,18 @@ begin
   TShell.AlNavegar :=
     procedure(const Destino: string)
     begin
-      if Destino = 'vender' then
-        IrA(TForm2)
-      else if Destino = 'inventario' then
-        IrA(TForm3)
+      if ClasePorRuta(Destino) <> nil then
+        IrARuta(Destino)
       else
         console.log('Pantalla pendiente: ' + Destino);   // caja, historial, tasas...
     end;
+
+  if not FEscuchando then
+  begin
+    FEscuchando := True;
+    window.addEventListener('hashchange', @AlCambiarHash);
+  end;
+
   TShell.Iniciar;
 end;
 

@@ -4,6 +4,7 @@ program ChickenFlash;
 
 uses
   Vcl.Forms,
+  Web,
   WEBLib.Forms,
   uAuthService in 'Source\Domain\Services\uAuthService.pas',
   fLogin in 'Source\Presentation\fLogin.pas' {Form1: TWebForm} {*.html},
@@ -23,10 +24,17 @@ begin
   Application.MainFormOnTaskbar := True;
   if TAuthService.HaySesion then
   begin
-    TNavegacion.Iniciar;                       // barra y panel, porque ya hay sesión
-    Application.CreateForm(TForm2, Form2);
+    TNavegacion.Iniciar;
+    TNavegacion.IrARuta(TNavegacion.RutaActual, True);   // normaliza la URL (#/vender si venía vacía)
+    if TNavegacion.RutaActual = 'inventario' then
+      Application.CreateForm(TForm3, Form3)
+    else
+      Application.CreateForm(TForm2, Form2);
   end
   else
+    begin
+    window.history.replaceState(nil, '', window.location.pathname + window.location.search);
     Application.CreateForm(TForm1, Form1);
+  end;
   Application.Run;
 end.

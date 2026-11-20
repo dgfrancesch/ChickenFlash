@@ -30,6 +30,8 @@ uses
 procedure Salir;
 begin
   await(Boolean, TAuthService.Logout);
+  // quita el #/ruta sin añadir historial, para que el login quede en la URL limpia
+  window.history.replaceState(nil, '', window.location.pathname + window.location.search);
   window.location.reload(False);
 end;
 

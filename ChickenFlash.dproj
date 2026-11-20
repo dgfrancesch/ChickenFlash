@@ -114,7 +114,6 @@
         <DCCReference Include="Source\Domain\Services\uAuthService.pas"/>
         <DCCReference Include="Source\Presentation\fLogin.pas">
             <Form>Form1</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
         <DCCReference Include="Source\Infraestructure\uConfig.pas"/>
@@ -122,13 +121,11 @@
         <DCCReference Include="Source\Infraestructure\uSession.pas"/>
         <DCCReference Include="Source\Presentation\fDashboard.pas">
             <Form>Form2</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
         <DCCReference Include="Source\Presentation\uPie.pas"/>
         <DCCReference Include="Source\Presentation\fInventory.pas">
             <Form>Form3</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
         <DCCReference Include="Source\Presentation\uShell.pas"/>

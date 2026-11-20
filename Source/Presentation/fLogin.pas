@@ -52,8 +52,9 @@ end;
 
 procedure TForm1.AbrirDashboard;
 begin
-  TNavegacion.Registrar(Self);   // el login es la pantalla actual y será liberada
+  TNavegacion.Registrar(Self);
   TNavegacion.Iniciar;
+  TNavegacion.IrARuta('vender', True);
   TNavegacion.IrA(TForm2);
 end;
 
