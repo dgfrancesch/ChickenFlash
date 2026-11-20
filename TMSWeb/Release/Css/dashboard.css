@@ -10,7 +10,7 @@
   --db-t3-bg:rgba(234,179,8,.20);  --db-t3:#FDE047;
   --db-t4-bg:rgba(16,185,129,.20); --db-t4:#6EE7B7;
   display:flex;flex-direction:column;
-  min-height:100vh;min-height:100dvh;padding-bottom:calc(var(--db-nav-h) + var(--db-pie-h));
+  min-height:100vh;min-height:100dvh; min-height:calc(100dvh - var(--sh-nav-h) - var(--sh-pie-h));
   background:var(--surface);color:var(--on-surface);font:14px/1.35 var(--font-body);
   -webkit-tap-highlight-color:transparent;
 }
@@ -26,15 +26,6 @@
 .db-i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .db-wrap{width:100%;flex:1 0 auto;max-width:520px;margin:0 auto}
 .db-main{padding:16px 16px 12px}
-
-/* footer fijo abajo del todo */
-.db .pie-pagina{position:fixed;left:0;right:0;bottom:0;z-index:6;height:var(--db-pie-h);box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 0 env(safe-area-inset-bottom,0px);background:var(--surface);border-top:1px solid var(--outline-variant);color:var(--outline);font-size:11px;line-height:1}
-
-/* navegación: encima del footer */
-.db-nav{position:fixed;left:50%;bottom:var(--db-pie-h);transform:translateX(-50%);z-index:6;width:100%;max-width:520px;height:var(--db-nav-h);display:flex;justify-content:space-around;padding:4px 0;box-sizing:border-box;background:var(--surface);border-top:1px solid var(--outline-variant)}
-.db-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;line-height:1;color:var(--outline)}
-.db-nav-item .db-i{width:26px;height:26px}
-.db-nav-item.on{color:var(--secondary)}.db-nav-item.on{color:var(--secondary)}
 
 /* encabezado y resumen */
 .db-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
@@ -84,7 +75,7 @@
 .db-q:focus{box-shadow:0 0 0 2px var(--secondary)}
 
 /* venta actual: pegada arriba de la navegación en teléfono */
-.db-dock{position:sticky;bottom:calc(var(--db-nav-h) + var(--db-pie-h));z-index:5}
+.db-dock{position:sticky;bottom:calc(var(--sh-nav-h) + var(--sh-pie-h));z-index:5}
 .db-dock[data-vacia="true"]{display:none}
 .db-venta{padding:10px 16px 2px;background:var(--card);border-top:2px solid var(--brand-red);border-radius:20px 20px 0 0}
 .db-venta-cab{display:flex;align-items:center;justify-content:space-between;font-weight:700}
@@ -109,24 +100,6 @@
 .db-total b{font:700 20px var(--font-headline)}
 .db-total button{height:42px;padding:0 26px;border-radius:999px;background:var(--secondary);color:var(--on-secondary);font-weight:800;font-size:15px}
 
-/* panel lateral (se abre con "Más"): entra desde la izquierda */
-.db-panel{position:fixed;inset:0;z-index:20;visibility:hidden;pointer-events:none;transition:visibility 0s linear 220ms}
-.db-panel.abierto{visibility:visible;pointer-events:auto;transition-delay:0s}
-.db-fondo{position:absolute;inset:0;width:100%;height:100%;background:rgba(2,6,23,.6);opacity:0;transition:opacity 220ms ease}
-.db-panel.abierto .db-fondo{opacity:1}
-.db-lado{position:absolute;top:0;left:0;bottom:0;width:min(86vw,360px);display:flex;flex-direction:column;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));background:var(--card);border-right:1px solid var(--outline-variant);box-shadow:var(--shadow-card);transform:translateX(-100%);transition:transform 220ms ease}
-.db-panel.abierto .db-lado{transform:none}
-.db-lado-cab{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--outline-variant)}
-.db-x{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--surface-container-high);color:var(--on-surface)}
-.db-lado-menu{flex:1;display:flex;flex-direction:column;gap:4px;padding:12px 0;overflow-y:auto}
-.db-item{width:100%;display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;text-align:left;color:var(--on-surface);font-size:14px}
-.db-item:hover{background:var(--surface-container-high)}
-.db-item span{flex:1}
-.db-item .db-i:first-child{color:var(--secondary)}
-.db-item .db-chev{width:16px;height:16px;color:var(--outline)}
-.db-item--salir{justify-content:center;background:var(--error-bg);border:1px solid var(--error-border);color:var(--error-text)}
-.db-item--salir .db-i:first-child{color:var(--error-text)}
-.db-item--salir span{flex:none}
 
 /* PC: productos a la izquierda y venta fija a la derecha (la navegación sigue abajo) */
 @media (min-width:900px){

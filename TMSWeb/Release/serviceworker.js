@@ -21,11 +21,13 @@ var CACHED_URLS = [
   "Assets/mercaditologo.jpg",
   "ChickenFlash.js",
   "Css/dashboard.css",
+  "Css/uShell.css",
   "Fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf",
   "Fonts/PlusJakartaSans-VariableFont_wght.ttf",
   "Fonts/RadioCanadaBig-Italic-VariableFont_wght.ttf",
   "Fonts/RadioCanadaBig-VariableFont_wght.ttf",
   "Source/Presentation/fDashboard.html",
+  "Source/Presentation/fInventory.html",
   "Source/Presentation/fLogin.html",
   "styles.css"
 ];

@@ -126,6 +126,13 @@
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
         <DCCReference Include="Source\Presentation\uPie.pas"/>
+        <DCCReference Include="Source\Presentation\fInventory.pas">
+            <Form>Form3</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Source\Presentation\uShell.pas"/>
+        <DCCReference Include="Source\Presentation\uNavegacion.pas"/>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -216,6 +223,7 @@
             <ResourceId>PngImage_10</ResourceId>
         </RcItem>
         <None Include="Css\dashboard.css"/>
+        <None Include="Css\uShell.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -437,6 +445,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Css\dashboard.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\uShell.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

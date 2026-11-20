@@ -34,7 +34,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uAuthService, fDashboard;
+  uAuthService, fDashboard,uShell,uNavegacion;
 
 procedure TForm1.btnVerClick(Sender: TObject);
 begin
@@ -51,14 +51,10 @@ begin
 end;
 
 procedure TForm1.AbrirDashboard;
-
-  procedure AlCrear(AForm: TObject);
-  begin
-    Form1.Free; // el login se quita cuando el dashboard ya está listo
-  end;
-
 begin
-  Form2 := TForm2.CreateNew(@AlCrear);
+  TNavegacion.Registrar(Self);   // el login es la pantalla actual y será liberada
+  TNavegacion.Iniciar;
+  TNavegacion.IrA(TForm2);
 end;
 
 procedure TForm1.btnEntrarClick(Sender: TObject);

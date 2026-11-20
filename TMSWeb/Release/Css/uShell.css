@@ -1,0 +1,61 @@
+/* ===== SHELL: barra inferior + footer + panel lateral (en todas las pantallas) ===== */
+:root{
+  --sh-nav-h:60px;
+  --sh-pie-h:calc(26px + env(safe-area-inset-bottom,0px));
+  --sh-ok:#EAB308;
+}
+:root[data-theme="light"]{--sh-ok:#D97706}
+
+body.sh-activo{padding-bottom:calc(var(--sh-nav-h) + var(--sh-pie-h))}
+#shell[hidden]{display:none}
+
+/* reset con especificidad cero para que las clases sh-* siempre ganen */
+:where(#shell) button{font:inherit;color:inherit;border:0;padding:0;margin:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+.sh-i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* footer fijo abajo del todo */
+.sh-pie{position:fixed;left:0;right:0;bottom:0;z-index:1000000;height:var(--sh-pie-h);box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:0 0 env(safe-area-inset-bottom,0px);background:var(--surface);border-top:1px solid var(--outline-variant);color:var(--outline);font:400 11px/1 var(--font-body)}
+
+/* barra inferior, encima del footer */
+.sh-nav{position:fixed;left:50%;bottom:var(--sh-pie-h);transform:translateX(-50%);z-index:1000000;width:100%;max-width:520px;height:var(--sh-nav-h);display:flex;justify-content:space-around;padding:4px 0;box-sizing:border-box;background:var(--surface);border-top:1px solid var(--outline-variant)}
+.sh-nav-item{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:400 12px/1 var(--font-body);color:var(--outline);transition:color 120ms ease-out}
+.sh-nav-item .sh-i{width:26px;height:26px}
+.sh-nav-item:hover{color:var(--on-surface)}
+
+/* pestaña activa: dorado + negrita + barrita arriba */
+.sh-nav-item.on{color:var(--secondary);font-weight:700}
+.sh-nav-item.on::before{content:"";position:absolute;top:-5px;left:50%;width:32px;height:3px;transform:translateX(-50%);border-radius:0 0 3px 3px;background:var(--secondary)}
+
+/* panel lateral (entra desde la izquierda con "Más") */
+.sh-panel{position:fixed;inset:0;z-index:1000001;visibility:hidden;pointer-events:none;transition:visibility 0s linear 220ms}
+.sh-panel.abierto{visibility:visible;pointer-events:auto;transition-delay:0s}
+.sh-fondo{position:absolute;inset:0;width:100%;height:100%;background:rgba(2,6,23,.6);opacity:0;transition:opacity 220ms ease}
+.sh-panel.abierto .sh-fondo{opacity:1}
+.sh-lado{position:absolute;top:0;left:0;bottom:0;width:min(86vw,360px);display:flex;flex-direction:column;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));background:var(--card);color:var(--on-surface);border-right:1px solid var(--outline-variant);box-shadow:var(--shadow-card);transform:translateX(-100%);transition:transform 220ms ease}
+.sh-panel.abierto .sh-lado{transform:none}
+
+.sh-lado-cab{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--outline-variant)}
+.sh-av{width:40px;height:40px;border-radius:50%;background:var(--brand-red);color:#fff;display:grid;place-items:center;font:700 17px var(--font-headline)}
+.sh-quien{flex:1;min-width:0}
+.sh-quien b{display:block;font:700 17px var(--font-headline)}
+.sh-quien small{color:var(--outline);font-size:13px}
+.sh-x{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--surface-container-high);color:var(--on-surface)}
+
+.sh-lado-menu{flex:1;display:flex;flex-direction:column;gap:4px;padding:12px 0;overflow-y:auto}
+.sh-item{width:100%;display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;text-align:left;color:var(--on-surface);font:400 14px/1.35 var(--font-body)}
+.sh-item:hover{background:var(--surface-container-high)}
+.sh-item span{flex:1}
+.sh-item .sh-i:first-child{color:var(--secondary)}
+.sh-item .sh-chev{width:16px;height:16px;color:var(--outline)}
+
+.sh-item--salir{justify-content:center;background:var(--error-bg);border:1px solid var(--error-border);color:var(--error-text)}
+.sh-item--salir:hover{background:var(--error-bg);filter:brightness(1.15)}
+.sh-item--salir .sh-i:first-child{color:var(--error-text)}
+.sh-item--salir span{flex:none}
+
+/* PC: barra centrada y más separada */
+@media (min-width:900px){
+  .sh-nav{max-width:none;justify-content:center;gap:48px}
+  .sh-nav-item{flex:none;padding:0 28px}
+}

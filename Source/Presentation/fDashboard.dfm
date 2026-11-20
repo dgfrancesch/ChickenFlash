@@ -3,10 +3,11 @@ object Form2: TForm2
   Height = 480
   OnCreate = WebFormCreate
   object lblVentaAviso: TWebLabel
-    Left = 0
-    Top = 90
-    Width = 95
+    Left = 202
+    Top = 30
+    Width = 71
     Height = 15
+    Caption = 'lblVentaAviso'
     ElementID = 'lblVentaAviso'
     ElementFont = efCSS
     ElementPosition = epIgnore
@@ -15,25 +16,24 @@ object Form2: TForm2
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
-  object btnMenuAjustes: TWebButton
+  object lblInicial: TWebHTMLDiv
     Left = 0
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'btnMenuAjustes'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
+    ElementID = 'lblInicial'
     HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
     WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
   end
-  object lblInicial: TWebHTMLDiv
+  object divVenta: TWebHTMLDiv
     Left = 101
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'lblInicial'
+    ElementID = 'divVenta'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     ChildOrder = 1
@@ -41,12 +41,12 @@ object Form2: TForm2
     ElementFont = efCSS
     Role = ''
   end
-  object divVenta: TWebHTMLDiv
+  object divProductos: TWebHTMLDiv
     Left = 202
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'divVenta'
+    ElementID = 'divProductos'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     ChildOrder = 2
@@ -54,177 +54,12 @@ object Form2: TForm2
     ElementFont = efCSS
     Role = ''
   end
-  object divProductos: TWebHTMLDiv
-    Left = 303
-    Top = 0
-    Width = 96
-    Height = 25
-    ElementID = 'divProductos'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
-    ChildOrder = 3
-    ElementPosition = epIgnore
-    ElementFont = efCSS
-    Role = ''
-  end
-  object btnSalir: TWebButton
-    Left = 404
-    Top = 0
-    Width = 96
-    Height = 25
-    ChildOrder = 4
-    ElementID = 'btnSalir'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-    OnClick = btnSalirClick
-  end
-  object lblRed: TWebHTMLSpan
-    Left = 505
-    Top = 0
-    Width = 96
-    Height = 25
-    ElementID = 'lblRed'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
-    ChildOrder = 5
-    ElementPosition = epIgnore
-    ElementFont = efCSS
-    Role = ''
-  end
-  object divFiltros: TWebHTMLDiv
-    Left = 0
-    Top = 30
-    Width = 96
-    Height = 25
-    ElementID = 'divFiltros'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
-    ChildOrder = 6
-    ElementPosition = epIgnore
-    ElementFont = efCSS
-    Role = ''
-  end
-  object dashboard: TWebHTMLDiv
-    Left = 101
-    Top = 30
-    Width = 96
-    Height = 25
-    ElementID = 'dashboard'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
-    ChildOrder = 7
-    ElementPosition = epIgnore
-    ElementFont = efCSS
-    Role = ''
-  end
-  object btnCerrarPanel: TWebButton
-    Left = 202
-    Top = 30
-    Width = 96
-    Height = 25
-    ChildOrder = 8
-    ElementID = 'btnCerrarPanel'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-    OnClick = btnCerrarPanelClick
-  end
-  object btnCobrar: TWebButton
-    Left = 303
-    Top = 30
-    Width = 96
-    Height = 25
-    ChildOrder = 9
-    ElementID = 'btnCobrar'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object lblInicialPanel: TWebHTMLDiv
-    Left = 404
-    Top = 30
-    Width = 96
-    Height = 25
-    ElementID = 'lblInicialPanel'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
-    ChildOrder = 10
-    ElementPosition = epIgnore
-    ElementFont = efCSS
-    Role = ''
-  end
-  object btnMenuHistorial: TWebButton
-    Left = 505
-    Top = 30
-    Width = 96
-    Height = 25
-    ChildOrder = 11
-    ElementID = 'btnMenuHistorial'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object btnMenuReportes: TWebButton
-    Left = 0
-    Top = 60
-    Width = 96
-    Height = 25
-    ChildOrder = 12
-    ElementID = 'btnMenuReportes'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object btnNavCaja: TWebButton
-    Left = 101
-    Top = 60
-    Width = 96
-    Height = 25
-    ChildOrder = 13
-    ElementID = 'btnNavCaja'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object btnMenuCompras: TWebButton
-    Left = 202
-    Top = 60
-    Width = 96
-    Height = 25
-    ChildOrder = 14
-    ElementID = 'btnMenuCompras'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
   object btnVaciar: TWebButton
     Left = 303
-    Top = 60
+    Top = 0
     Width = 96
     Height = 25
-    ChildOrder = 15
+    ChildOrder = 3
     ElementID = 'btnVaciar'
     ElementFont = efCSS
     ElementPosition = epIgnore
@@ -233,82 +68,65 @@ object Form2: TForm2
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
-  object btnNavVender: TWebButton
+  object lblRed: TWebHTMLSpan
     Left = 404
-    Top = 60
+    Top = 0
     Width = 96
     Height = 25
-    ChildOrder = 16
-    ElementID = 'btnNavVender'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object btnMenuTasas: TWebButton
-    Left = 505
-    Top = 60
-    Width = 96
-    Height = 25
-    ChildOrder = 17
-    ElementID = 'btnMenuTasas'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object btnNavMas: TWebButton
-    Left = 101
-    Top = 90
-    Width = 96
-    Height = 25
-    ChildOrder = 19
-    ElementID = 'btnNavMas'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-    OnClick = btnNavMasClick
-  end
-  object btnNavInventario: TWebButton
-    Left = 202
-    Top = 90
-    Width = 96
-    Height = 25
-    ChildOrder = 20
-    ElementID = 'btnNavInventario'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object panelLateral: TWebHTMLDiv
-    Left = 303
-    Top = 90
-    Width = 96
-    Height = 25
-    ElementID = 'panelLateral'
+    ElementID = 'lblRed'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
-    ChildOrder = 21
+    ChildOrder = 4
     ElementPosition = epIgnore
     ElementFont = efCSS
     Role = ''
   end
-  object edtBuscar: TWebEdit
-    Left = 404
-    Top = 90
+  object divFiltros: TWebHTMLDiv
+    Left = 505
+    Top = 0
     Width = 96
     Height = 25
-    ChildOrder = 22
+    ElementID = 'divFiltros'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 5
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object dashboard: TWebHTMLDiv
+    Left = 0
+    Top = 30
+    Width = 96
+    Height = 25
+    ElementID = 'dashboard'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 6
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object btnCobrar: TWebButton
+    Left = 101
+    Top = 30
+    Width = 96
+    Height = 25
+    ChildOrder = 7
+    ElementID = 'btnCobrar'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object edtBuscar: TWebEdit
+    Left = 303
+    Top = 30
+    Width = 96
+    Height = 25
+    ChildOrder = 9
     ElementID = 'edtBuscar'
     ElementFont = efCSS
     ElementPosition = epIgnore
@@ -316,20 +134,5 @@ object Form2: TForm2
     HeightPercent = 100.000000000000000000
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
-  end
-  object btnFondoPanel: TWebButton
-    Left = 505
-    Top = 90
-    Width = 96
-    Height = 25
-    ChildOrder = 23
-    ElementID = 'btnFondoPanel'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-    OnClick = btnFondoPanelClick
   end
 end
