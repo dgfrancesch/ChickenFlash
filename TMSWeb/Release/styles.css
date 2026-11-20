@@ -389,13 +389,13 @@ button, input { font-family: inherit; }
 html body {
   background:
     linear-gradient(rgba(13,18,36,.85), rgba(13,18,36,.85)),
-    url("Assets/fondo-comida.jpg") center / cover no-repeat fixed;
+    url("Assets/fondo-comida.jpg") center / cover no-repeat fixed !important;
 }
 
 html[data-theme="light"] body {
   background:
     linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)),
-    url("Assets/fondo-comida.jpg") center / cover no-repeat fixed;
+    url("Assets/fondo-comida.jpg") center / cover no-repeat fixed !important;
 }
 
-.pagina { background: transparent; }
+.pagina { background: transparent !important; }

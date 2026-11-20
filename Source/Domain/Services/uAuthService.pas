@@ -16,7 +16,8 @@ type
   public
     [async]
     class function Login(const Usuario, Clave: string): TAuthResult;
-    class procedure Logout;
+    [async]
+class function Logout: Boolean;
     class function HaySesion: Boolean;
   end;
 
@@ -61,9 +62,20 @@ begin
   end;
 end;
 
-class procedure TAuthService.Logout;
+[async]
+class function TAuthService.Logout: Boolean;
+var
+  Token: string;
+  R: TApiResponse;
 begin
-  TSession.Clear;
+  Token := TSession.Token;
+  try
+    if Token <> '' then
+      R := await(TApiResponse, THttp.Send('POST', '/auth/v1/logout?scope=local', '', Token));
+  finally
+    TSession.Clear;   // siempre se borra lo local, aunque falle el servidor
+  end;
+  Result := True;
 end;
 
 class function TAuthService.HaySesion: Boolean;

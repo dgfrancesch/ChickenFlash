@@ -120,6 +120,12 @@
         <DCCReference Include="Source\Infraestructure\uConfig.pas"/>
         <DCCReference Include="Source\Infraestructure\uHttp.pas"/>
         <DCCReference Include="Source\Infraestructure\uSession.pas"/>
+        <DCCReference Include="Source\Presentation\fDashboard.pas">
+            <Form>Form2</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Source\Presentation\uPie.pas"/>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -201,6 +207,15 @@
             <ResourceType>FONT</ResourceType>
             <ResourceId>4</ResourceId>
         </RcItem>
+        <RcItem Include="Assets\icon-64.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>PngImage_9</ResourceId>
+        </RcItem>
+        <RcItem Include="Assets\icon-256.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>PngImage_10</ResourceId>
+        </RcItem>
+        <None Include="Css\dashboard.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -307,6 +322,12 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="Assets\icon-256.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="Assets\icon-512-maskable.png" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
@@ -338,6 +359,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Assets\icon-512_New1.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Assets\icon-64.png" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
@@ -404,6 +431,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Assets\mercaditologo.jpg" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\dashboard.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

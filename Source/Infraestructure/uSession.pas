@@ -9,13 +9,14 @@ type
     class procedure Clear;
     class function Token: string;
     class function UserId: string;
+    class function UserName: string;
     class function IsValid: Boolean;
   end;
 
 implementation
 
 uses
-  JS, Web, uConfig;
+  JS, Web, uConfig,System.SysUtils;
 
 function LeerSesion: TJSObject;
 begin
@@ -55,6 +56,26 @@ begin
   O := LeerSesion;
   if Assigned(O) and O.hasOwnProperty('user') then
     Result := string(TJSObject(O['user'])['id']);
+end;
+
+class function TSession.UserName: string;
+var
+  O: TJSObject;
+  Email: string;
+  P: Integer;
+begin
+  Result := '';
+  O := LeerSesion;
+  if Assigned(O) and O.hasOwnProperty('user') then
+  begin
+    Email := string(TJSObject(O['user'])['email']);
+    P := Pos('@', Email);
+    if P > 1 then
+    begin
+      Result := Copy(Email, 1, P - 1);
+      Result := UpperCase(Copy(Result, 1, 1)) + Copy(Result, 2, Length(Result));
+    end;
+  end;
 end;
 
 class function TSession.IsValid: Boolean;

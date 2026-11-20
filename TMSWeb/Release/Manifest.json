@@ -13,19 +13,19 @@
    "icons":
    [
     {
-      "src": "IconResLow.png",
+      "src": "Assets/icon-64.png",
       "type": "image/png",
       "sizes": "64x64",
       "purpose": "any maskable"
     },
     {
-      "src": "IconResMid.png",
+      "src": "Assets/icon-256.png",
       "type": "image/png",
       "sizes": "256x256",
       "purpose": "any maskable"
     },
     {
-      "src": "IconResHigh.png",
+      "src": "Assets/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"

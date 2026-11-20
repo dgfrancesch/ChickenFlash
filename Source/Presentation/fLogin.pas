@@ -5,12 +5,11 @@ interface
 uses
   System.SysUtils, System.Classes, JS, Web, WEBLib.Graphics, WEBLib.Controls,
   WEBLib.Forms, WEBLib.Dialogs, Vcl.Controls, Vcl.StdCtrls, WEBLib.StdCtrls,
-  WEBLib.ExtCtrls,DateUtils;
+  WEBLib.ExtCtrls, DateUtils;
 
 type
   TForm1 = class(TWebForm)
     lnkOlvide: TWebLinkLabel;
-
     titulo: TWebLabel;
     edtClave: TWebEdit;
     lblError: TWebLabel;
@@ -23,9 +22,8 @@ type
     procedure btnVerClick(Sender: TObject);
     procedure WebFormCreate(Sender: TObject);
   private
-    { Private declarations }
+    procedure AbrirDashboard;
   public
-    { Public declarations }
   end;
 
 var
@@ -36,7 +34,7 @@ implementation
 {$R *.dfm}
 
 uses
-  uAuthService;
+  uAuthService, fDashboard;
 
 procedure TForm1.btnVerClick(Sender: TObject);
 begin
@@ -52,6 +50,17 @@ begin
     '&copy; ' + IntToStr(YearOf(Now)) + ' Chicken Flash • Sistema de Punto de Venta e Inventario';
 end;
 
+procedure TForm1.AbrirDashboard;
+
+  procedure AlCrear(AForm: TObject);
+  begin
+    Form1.Free; // el login se quita cuando el dashboard ya está listo
+  end;
+
+begin
+  Form2 := TForm2.CreateNew(@AlCrear);
+end;
+
 procedure TForm1.btnEntrarClick(Sender: TObject);
 var
   R: TAuthResult;
@@ -65,7 +74,7 @@ begin
   end;
 
   if R.Ok then
-    lblError.Caption := 'Entró bien'
+    AbrirDashboard
   else
     lblError.Caption := R.Mensaje;
 end;
