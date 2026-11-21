@@ -20,12 +20,13 @@ type
 implementation
 
 uses
-  uShell, fDashboard, fInventory;
+  uShell, fDashboard, fInventory,fAddProduct;
 
 function ClasePorRuta(const ARuta: string): TWebFormClass;
 begin
   if ARuta = 'vender' then Result := TForm2
   else if ARuta = 'inventario' then Result := TForm3
+  else if ARuta = 'agregar' then Result := TForm4
   else Result := nil;
 end;
 
@@ -71,7 +72,8 @@ var
   begin
     if Anterior <> nil then
       Anterior.Free;
-    TShell.Activar(TShell.Destino);   // si el Free se llevó el shell, se vuelve a crear
+    TShell.Activar(TShell.Destino);
+    TShell.PonerInicial;
   end;
 
 begin

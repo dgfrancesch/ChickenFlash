@@ -1,0 +1,156 @@
+﻿/* fAgregarProducto.css — todo acotado a .agr para no chocar con styles.css ni con fInventario.css */
+
+.agr{
+  --bg:#0f172a; --card:#1b2840; --card2:#16223a; --line:#33425e;
+  --txt:#f1f5fb; --mut:#93a0b6; --gold:#eab308; --red:#b91c1c;
+  --ok:#4ade80; --warn:#fb923c; --field:#0b1426;
+  max-width:480px;margin:0 auto;padding:16px 16px 104px;
+  display:flex;flex-direction:column;gap:14px;
+  color:var(--txt);font-size:14px;line-height:1.4;
+  /* fondo sólido a todo el ancho y alto de la pantalla */
+  min-height:100vh;
+  background:var(--bg);
+  box-shadow:0 0 0 100vmax var(--bg);
+  clip-path:inset(0 -100vmax);
+}
+.agr *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.agr [hidden]{display:none!important}
+.agr button,.agr input{font:inherit;color:inherit}
+.agr button{border:0;padding:0;cursor:pointer;background:none}
+.agr svg.i{
+  width:20px;height:20px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;
+}
+
+/* Encabezado */
+.agr .top{display:flex;align-items:center;gap:12px}
+.agr .back{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--card);border:1px solid var(--line);
+  display:grid;place-items:center;color:var(--txt);flex:none;
+}
+.agr .back:active{background:var(--line)}
+.agr .who{flex:1;min-width:0}
+.agr .who b{display:block;font-size:17px;line-height:1.2}
+.agr .who small{color:var(--mut);font-size:12px}
+.agr .net{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ok);flex:none}
+.agr .net:before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.agr .net.off{color:var(--warn)}
+
+/* Tarjeta del formulario */
+.agr .card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:20px;padding:16px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.agr .fg{display:flex;flex-direction:column;gap:6px}
+.agr .fg label{font-size:12px;color:var(--mut);font-weight:600}
+.agr .inp{
+  width:100%;height:44px;background:var(--field);border:1px solid var(--line);
+  border-radius:12px;padding:0 14px;color:var(--txt);font-size:15px;outline:0;
+}
+.agr .inp:focus{border-color:var(--gold)}
+.agr .inp::placeholder{color:var(--mut);opacity:.75}
+.agr .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* Botones segmentados */
+.agr .seg{display:grid;gap:8px}
+.agr .seg.c2{grid-template-columns:repeat(2,1fr)}
+.agr .seg.sec{display:flex;flex-wrap:wrap}
+.agr .seg.sec button{flex:1 1 calc(33% - 8px)}
+.agr .seg button{
+  height:42px;border-radius:12px;background:var(--field);border:1px solid var(--line);
+  color:#cbd5e1;font-size:13px;font-weight:600;padding:0 8px;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.agr .seg button.on{
+  background:rgba(234,179,8,.16);border-color:var(--gold);color:var(--gold);font-weight:700;
+}
+
+/* Sugerencias rápidas */
+.agr .hints{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.agr .hints button{
+  padding:5px 10px;border-radius:999px;font-size:11px;font-weight:600;
+  background:var(--card2);border:1px solid var(--line);color:var(--mut);
+}
+.agr .hints button:active{border-color:var(--gold);color:var(--gold)}
+
+/* Foto */
+.agr .photo-drop{
+  display:flex;align-items:center;gap:12px;
+  background:var(--field);border:1.5px dashed var(--line);border-radius:14px;
+  padding:12px 14px;text-align:left;width:100%;
+}
+.agr .photo-drop:active{border-color:var(--gold)}
+.agr .photo-ico{
+  width:46px;height:46px;border-radius:12px;background:var(--card2);
+  border:1px solid var(--line);display:grid;place-items:center;color:var(--gold);flex:none;
+}
+.agr .photo-txt b{display:block;font-size:13px;color:var(--txt)}
+.agr .photo-txt small{display:block;font-size:11px;color:var(--mut)}
+.agr .photo-prev{
+  display:flex;align-items:center;gap:12px;
+  background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;
+}
+.agr .photo-prev img{
+  width:64px;height:64px;border-radius:10px;object-fit:cover;flex:none;border:1px solid var(--line);
+}
+.agr .photo-meta{flex:1;min-width:0}
+.agr .photo-meta b{display:block;font-size:13px;margin-bottom:6px}
+.agr .photo-btns{display:flex;gap:8px;flex-wrap:wrap}
+.agr .p-btn{
+  height:30px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:600;
+  background:var(--card);border:1px solid var(--line);color:var(--txt);
+}
+.agr .p-btn.del{color:#fca5a5;border-color:rgba(185,28,28,.5);background:rgba(185,28,28,.18)}
+
+/* Interruptor */
+.agr .sw-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--card2);border:1px solid var(--line);
+  border-radius:14px;padding:12px 14px;
+}
+.agr .sw-row b{display:block;font-size:14px}
+.agr .sw-row small{color:var(--mut);font-size:12px}
+.agr .sw{
+  width:48px;height:28px;border-radius:999px;background:var(--line);
+  position:relative;transition:background .15s;flex:none;
+}
+.agr .sw:after{
+  content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;
+  border-radius:50%;background:var(--txt);transition:transform .15s;
+}
+.agr .sw.on{background:var(--ok)}
+.agr .sw.on:after{transform:translateX(20px);background:#052e16}
+
+/* Error */
+.agr .err{
+  color:#fca5a5;font-size:13px;font-weight:600;
+  background:rgba(185,28,28,.18);border:1px solid rgba(185,28,28,.5);
+  border-radius:12px;padding:10px 12px;
+}
+
+/* Acciones */
+.agr .actions{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.agr .btn-save{
+  width:100%;height:46px;border-radius:999px;background:var(--gold);
+  color:#1a1300;font-weight:800;font-size:15px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 4px 16px rgba(234,179,8,.2);
+}
+.agr .btn-save:active{transform:scale(.98)}
+.agr .btn-cancel{
+  width:100%;height:42px;border-radius:999px;background:var(--card);
+  border:1px solid var(--line);color:var(--txt);font-weight:600;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Aviso */
+.agr .toast{
+  position:fixed;left:50%;bottom:84px;transform:translateX(-50%);
+  background:#111c33;border:1px solid var(--gold);color:var(--txt);
+  padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;
+  z-index:40;box-shadow:0 8px 24px rgba(0,0,0,.45);
+  display:flex;align-items:center;gap:8px;
+}
+.agr .toast svg.i{width:16px;height:16px;color:var(--ok)}

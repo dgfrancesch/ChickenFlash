@@ -8,7 +8,6 @@
 
 body.sh-activo{padding-bottom:calc(var(--sh-nav-h) + var(--sh-pie-h))}
 #shell[hidden]{display:none}
-
 /* reset con especificidad cero para que las clases sh-* siempre ganen */
 :where(#shell) button{font:inherit;color:inherit;border:0;padding:0;margin:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 

@@ -15,7 +15,8 @@ uses
   uPie in 'Source\Presentation\uPie.pas',
   fInventory in 'Source\Presentation\fInventory.pas' {Form3: TWebForm} {*.html},
   uShell in 'Source\Presentation\uShell.pas',
-  uNavegacion in 'Source\Presentation\uNavegacion.pas';
+  uNavegacion in 'Source\Presentation\uNavegacion.pas',
+  fAddProduct in 'Source\Presentation\fAddProduct.pas' {Form4: TWebForm} {*.html};
 
 {$R *.res}
 
@@ -28,11 +29,13 @@ begin
     TNavegacion.IrARuta(TNavegacion.RutaActual, True);   // normaliza la URL (#/vender si venía vacía)
     if TNavegacion.RutaActual = 'inventario' then
       Application.CreateForm(TForm3, Form3)
+    else if TNavegacion.RutaActual = 'agregar' then
+      Application.CreateForm(TForm4, Form4)
     else
       Application.CreateForm(TForm2, Form2);
   end
   else
-    begin
+  begin
     window.history.replaceState(nil, '', window.location.pathname + window.location.search);
     Application.CreateForm(TForm1, Form1);
   end;

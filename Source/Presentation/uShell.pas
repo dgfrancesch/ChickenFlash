@@ -19,6 +19,7 @@ type
     class procedure Ocultar;
     class procedure AbrirPanel;
     class procedure CerrarPanel;
+        class procedure PonerInicial;
   end;
 
 implementation
@@ -180,6 +181,17 @@ begin
       El.classList.add('on')
     else
       El.classList.remove('on');
+  end;
+end;
+
+class procedure TShell.PonerInicial;
+var
+  Inicial: string;
+begin
+  Inicial := UpperCase(Copy(TSession.UserName, 1, 1));
+  asm
+    const el = document.getElementById('lblInicial');
+    if (el) el.innerHTML = Inicial;
   end;
 end;
 

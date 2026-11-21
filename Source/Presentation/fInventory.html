@@ -1,21 +1,161 @@
-﻿<html>
-  <head>
-  <meta charset="UTF-8">
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <title>Inventario Chicken Flash</title>
-    <style>
-      .inv{min-height:calc(100dvh - var(--sh-nav-h) - var(--sh-pie-h));padding:16px;background:var(--surface);color:var(--on-surface);font:14px/1.35 var(--font-body)}
-      .inv-wrap{max-width:1180px;margin:0 auto}
-      .inv h1{margin:0 0 12px;font:700 22px var(--font-headline)}
-      .inv p{margin:0;color:var(--outline)}
-    </style>
-  </head>
-  <body>
-    <div class="inv" id="inventario">
-      <div class="inv-wrap">
-        <h1>Inventario</h1>
-        <p>Aquí irán los productos y su stock.</p>
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chicken Flash · Inventario</title>
+<style></style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"></path></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"></path></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 8h3l2-2h6l2 2h3a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2v-8a2 2 0 012-2z"></path><circle cx="12" cy="14" r="3.2"></circle></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"></path></symbol>
+</svg>
+
+<div class="inv" id="divInventario">
+
+  <header class="top">
+    <div class="av" id="lblInicial">J</div>
+    <div class="who">
+      <b>Inventario</b>
+      <small>Chicken Flash · Administrador</small>
+    </div>
+    <span class="net" id="lblRed">En línea</span>
+  </header>
+
+  <div class="kpis">
+    <button class="kpi" id="btnKpiActivos" type="button">
+      <small>Productos activos</small>
+      <b class="g" id="lblKpiActivos">0</b>
+    </button>
+    <button class="kpi" id="btnKpiBajo" type="button">
+      <small>Stock bajo (≤ 8)</small>
+      <b class="o" id="lblKpiBajo">0</b>
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <label class="search">
+      <svg class="i"><use href="#i-search"></use></svg>
+      <input id="edtBuscar" type="search" placeholder="Buscar producto..." autocomplete="off">
+    </label>
+    <button class="btn-new" id="btnAgregar" type="button">
+      <svg class="i"><use href="#i-plus"></use></svg>Agregar
+    </button>
+  </div>
+
+  <div class="chips" id="divFiltros">
+    <button class="on" id="btnTodos" type="button">Todos</button>
+    <div class="chips-sec" id="divSecciones"></div>
+    <button class="sec-edit-chip" id="btnEditarSecciones" type="button">
+      <svg class="i"><use href="#i-edit"></use></svg>Editar secciones
+    </button>
+  </div>
+
+  <div class="list" id="divLista"></div>
+
+  <!-- Agregar / Editar producto -->
+  <div class="backdrop" id="divModal" hidden>
+    <div class="sheet" id="divSheet">
+      <div class="sheet-head">
+        <h2 id="lblModalTitulo">Agregar producto</h2>
+        <button class="close-btn" id="btnCerrar" type="button" aria-label="Cerrar">
+          <svg class="i"><use href="#i-close"></use></svg>
+        </button>
+      </div>
+
+      <div class="fg">
+        <label>Foto del producto</label>
+        <input id="edtFoto" type="file" accept="image/*" hidden>
+        <button class="photo-drop" id="btnFoto" type="button">
+          <span class="photo-ico"><svg class="i"><use href="#i-cam"></use></svg></span>
+          <span class="photo-txt">
+            <b>Agregar foto</b>
+            <small>Cámara o galería</small>
+          </span>
+        </button>
+        <div class="photo-prev" id="divFotoPrev" hidden>
+          <img id="imgFoto" src alt="Vista previa">
+          <div class="photo-meta">
+            <b>Foto del producto</b>
+            <div class="photo-btns">
+              <button class="p-btn" id="btnCambiarFoto" type="button">Cambiar</button>
+              <button class="p-btn del" id="btnQuitarFoto" type="button">Quitar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label for="edtNombre">Nombre del producto</label>
+        <input class="inp" id="edtNombre" type="text" placeholder="Ej. Muslos de pollo">
+      </div>
+
+      <div class="fg">
+        <label>Sección</label>
+        <div class="seg sec" id="divSeccion"></div>
+      </div>
+
+      <div class="fg">
+        <label>Forma de venta</label>
+        <div class="seg c2">
+          <button class="on" id="btnUniLb" type="button">Por libra (lb)</button>
+          <button id="btnUniPaq" type="button">Por paquete (paq)</button>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label for="edtDetalle">Presentación / detalle</label>
+        <input class="inp" id="edtDetalle" type="text" placeholder="Ej. Paquete 5 lb o Por libra">
+      </div>
+
+      <div class="row2">
+        <div class="fg">
+          <label for="edtPrecio">Precio (CUP)</label>
+          <input class="inp" id="edtPrecio" type="number" inputmode="decimal" min="1" step="any" placeholder="450">
+        </div>
+        <div class="fg">
+          <label for="edtStock">Stock actual</label>
+          <input class="inp" id="edtStock" type="number" inputmode="decimal" min="0" step="any" placeholder="14">
+        </div>
+      </div>
+
+      <div class="sw-row">
+        <div>
+          <b>Visible en tienda y vender</b>
+          <small>Desactiva para ocultar sin borrar del sistema</small>
+        </div>
+        <button class="sw on" id="btnVisible" type="button" role="switch" aria-checked="true"></button>
+      </div>
+
+      <div class="sheet-actions">
+        <button class="btn-save" id="btnGuardar" type="button">
+          <svg class="i"><use href="#i-check"></use></svg>
+          <span id="lblGuardar">Guardar producto</span>
+        </button>
+        <div class="btn-row">
+          <button class="btn-cancel" id="btnCancelar" type="button">Cancelar</button>
+          <button class="btn-del" id="btnEliminar" type="button" hidden>
+            <svg class="i"><use href="#i-trash"></use></svg>
+            <span id="lblEliminar">Eliminar</span>
+          </button>
+        </div>
       </div>
     </div>
-  </body>
+  </div>
+
+  <div class="toast" id="divToast" hidden>
+    <svg class="i"><use href="#i-check"></use></svg>
+    <span id="lblToast">Guardado</span>
+  </div>
+
+</div>
+</body>
 </html>

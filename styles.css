@@ -399,3 +399,7 @@ html[data-theme="light"] body {
 }
 
 .pagina { background: transparent !important; }
+
+body.sh-activo{
+  background:#0f172a !important;   /* quita también la imagen de comida */
+}

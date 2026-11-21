@@ -130,6 +130,11 @@
         </DCCReference>
         <DCCReference Include="Source\Presentation\uShell.pas"/>
         <DCCReference Include="Source\Presentation\uNavegacion.pas"/>
+        <DCCReference Include="Source\Presentation\fAddProduct.pas">
+            <Form>Form4</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -221,6 +226,8 @@
         </RcItem>
         <None Include="Css\dashboard.css"/>
         <None Include="Css\uShell.css"/>
+        <None Include="Css\Inventario.css"/>
+        <None Include="Css\addProduct.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -436,6 +443,18 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Assets\mercaditologo.jpg" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\Inventario.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\addProduct.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
