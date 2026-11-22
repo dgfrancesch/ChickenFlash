@@ -18,7 +18,11 @@
     <noscript>Your browser does not support JavaScript!</noscript>
     <link rel="icon" type="image/x-icon" href="Assets/favicon2.ico">
     <link rel="apple-touch-icon" href="Assets/apple-touch-icon.png">
-    <script type="text/javascript" src="serviceworker.js"></script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('serviceworker.js');
+  }
+</script>
     <meta $(Manifest)>
     <title>Mercadito Chicken Flash</title>
     <script type="text/javascript" src="$(ProjectName).js"></script>

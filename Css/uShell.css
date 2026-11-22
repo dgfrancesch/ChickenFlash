@@ -22,6 +22,15 @@ body.sh-activo{padding-bottom:calc(var(--sh-nav-h) + var(--sh-pie-h))}
 .sh-nav-item .sh-i{width:26px;height:26px}
 .sh-nav-item:hover{color:var(--on-surface)}
 
+.sh-offline{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:60;height:26px;
+  padding-top:env(safe-area-inset-top,0px);
+  line-height:26px;text-align:center;font-size:12px;font-weight:700;
+  background:#fb923c;color:#1a1300;
+}
+body.sin-red .sh-offline{display:block}
+body.sin-red{padding-top:calc(26px + env(safe-area-inset-top,0px))}
+
 /* pestaña activa: dorado + negrita + barrita arriba */
 .sh-nav-item.on{color:var(--secondary);font-weight:700}
 .sh-nav-item.on::before{content:"";position:absolute;top:-5px;left:50%;width:32px;height:3px;transform:translateX(-50%);border-radius:0 0 3px 3px;background:var(--secondary)}
@@ -57,4 +66,18 @@ body.sh-activo{padding-bottom:calc(var(--sh-nav-h) + var(--sh-pie-h))}
 @media (min-width:900px){
   .sh-nav{max-width:none;justify-content:center;gap:48px}
   .sh-nav-item{flex:none;padding:0 28px}
+}
+
+/* Indicador de conexión de cada pantalla: "En línea" pasa a "Sin conexión" */
+body.sin-red .net,
+body.sin-red .db-red{
+  font-size:0;
+  gap:0;
+  color:#fb923c;
+}
+body.sin-red .net::after,
+body.sin-red .db-red::after{
+  content:"Sin conexi\00f3n";
+  font-size:12px;
+  margin-left:6px;
 }

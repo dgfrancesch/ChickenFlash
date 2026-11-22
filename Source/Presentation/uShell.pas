@@ -27,7 +27,7 @@ type
 implementation
 
 uses
-  uSession, uAuthService, uPie,uNavegacion;
+  uSession, uAuthService, uPie,uNavegacion,uHttp;
 
 [async]
 procedure Salir;
@@ -36,6 +36,8 @@ begin
   // quita el #/ruta sin añadir historial, para que el login quede en la URL limpia
   window.history.replaceState(nil, '', window.location.pathname + window.location.search);
   window.location.reload(False);
+    await(Boolean, TAuthService.Logout);
+  THttp.LimpiarCache;   // al cerrar sesión se borran los datos guardados
 end;
 
 function BuscarAncestro(El: TJSElement; const Selector: string): TJSElement;
@@ -86,8 +88,13 @@ begin
   if document.getElementById('shell') = nil then
   begin
     asm
+     if (!navigator.onLine) document.body.classList.add('sin-red');
+      window.addEventListener('offline', function () {
+        document.body.classList.add('sin-red');
+      });
       const html = `
 <div id="shell">
+  <div class="sh-offline" id="shOffline">Sin conexión · trabajando con datos guardados</div>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="sh-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
     <symbol id="sh-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></symbol>

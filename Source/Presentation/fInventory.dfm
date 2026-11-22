@@ -436,7 +436,7 @@ object Form3: TForm3
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
-  object edtBuscar: TWebEdit
+  object edtInvBuscar: TWebEdit
     Left = 202
     Top = 150
     Width = 96

@@ -40,7 +40,7 @@ type
     btnCambiarFoto: TWebButton;
     btnUniPaq: TWebButton;
     btnKpiActivos: TWebButton;
-    edtBuscar: TWebEdit;
+    edtInvBuscar: TWebEdit;
     lblToast: TWebHTMLSpan;
     btnCerrar: TWebButton;
     divInventario: TWebHTMLDiv;
@@ -54,6 +54,8 @@ type
     FProductos: array of TProducto;
     FSeccionId: Integer;          // 0 = todas las secciones
     FFiltroKpi: string;           // '' = ninguno, 'activos' o 'bajo'
+        FBusqueda: string;            // texto buscado, sin tildes y en minúsculas
+    procedure edtInvBuscarChange(Sender: TObject);
     [async]
     procedure Cargar;
     procedure PintarSecciones;
@@ -237,6 +239,7 @@ begin
   btnAgregar.OnClick := btnAgregarClick;
   btnKpiActivos.OnClick := btnKpiActivosClick;
   btnKpiBajo.OnClick := btnKpiBajoClick;
+    edtInvBuscar.OnChange := edtInvBuscarChange;
   divInvFiltros.ElementHandle.addEventListener('click', @AlClicFiltros);
     divLista.ElementHandle.addEventListener('click', @AlClicLista);
       divLista.ElementHandle.addEventListener('change', @AlCambiarLista);
@@ -324,6 +327,13 @@ begin
     end;
 end;
 
+function Normalizar(const S: string): string;
+begin
+  asm
+    Result = String(S).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  end;
+end;
+
 // Un producto se muestra si cumple la sección elegida y el filtro de los contadores
 function TForm3.Coincide(P: TProducto): Boolean;
 begin
@@ -333,6 +343,14 @@ begin
     Result := P.Visible
   else if FFiltroKpi = 'bajo' then
     Result := P.Visible and (P.Stock <= LIMITE_STOCK_BAJO);
+  if not Result then Exit;
+  if FBusqueda <> '' then
+    Result := Pos(FBusqueda, Normalizar(P.Nombre)) > 0;
+end;
+procedure TForm3.edtInvBuscarChange(Sender: TObject);
+begin
+  FBusqueda := Normalizar(Trim(edtInvBuscar.Text));
+  PintarLista;
 end;
 
 procedure TForm3.MarcarKpis;
