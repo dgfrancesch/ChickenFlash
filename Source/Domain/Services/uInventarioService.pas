@@ -10,6 +10,9 @@ type
   public
     Id: Integer;
     Nombre: string;
+        Orden: Integer;
+    Activa: Boolean;
+    Productos: Integer;
   end;
 
   TResultadoSecciones = class
@@ -67,13 +70,23 @@ type
     [async]
     class function CargarSecciones: TResultadoSecciones;
     [async]
+    class function CargarSeccionesTodas: TResultadoSecciones;
+    [async]
     class function CargarProductos: TResultadoProductos;
     [async]
     class function CrearProducto(P: TProductoNuevo): TResultado;
-        [async]
+    [async]
     class function ActualizarProducto(Id: Integer; P: TProductoNuevo): TResultado;
-        [async]
+    [async]
     class function ActualizarStock(Id: Integer; Stock: Double): TResultado;
+    [async]
+    class function CrearSeccion(const Nombre: string; Orden: Integer; Activa: Boolean): TResultado;
+    [async]
+    class function ActualizarSeccion(Id: Integer; const Campo: string; Valor: JSValue): TResultado;
+    [async]
+    class function EliminarSeccion(Id: Integer): TResultado;
+    [async]
+    class function ContarProductos(SeccionId: Integer): Integer;
   end;
 
 implementation
@@ -278,6 +291,121 @@ begin
   Result.Ok := R.Ok;
   if not R.Ok then
     Result.Error := MensajeError(R);
+end;
+
+class function TInventarioService.CargarSeccionesTodas: TResultadoSecciones;
+var
+  R: TApiResponse;
+  Arr: TJSArray;
+  Obj: TJSObject;
+  S: TSeccion;
+  i: Integer;
+begin
+  Result := TResultadoSecciones.Create;
+  R := await(TApiResponse, THttp.Send('GET',
+    '/rest/v1/secciones?select=id,nombre,orden,activa&order=orden.asc,id.asc',
+    '', Token));
+  if not R.Ok then
+  begin
+    Result.Error := MensajeError(R);
+    Exit;
+  end;
+
+  Arr := TJSArray(TJSJSON.parse(R.Body));
+  SetLength(Result.Items, Arr.length);
+  for i := 0 to Arr.length - 1 do
+  begin
+    Obj := TJSObject(Arr[i]);
+    S := TSeccion.Create;
+    S.Id := Integer(Obj['id']);
+    S.Nombre := TextoJS(Obj['nombre']);
+    S.Orden := Round(NumeroJS(Obj['orden']));
+    S.Activa := Boolean(Obj['activa']);
+    Result.Items[i] := S;
+  end;
+  Result.Ok := True;
+end;
+
+class function TInventarioService.CrearSeccion(const Nombre: string; Orden: Integer;
+  Activa: Boolean): TResultado;
+var
+  O: TJSObject;
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  O := TJSObject.new;
+  O['nombre'] := Trim(Nombre);
+  O['orden'] := Orden;
+  O['activa'] := Activa;
+  O['visible'] := True;
+  R := await(TApiResponse, THttp.Send('POST', '/rest/v1/secciones',
+    TJSJSON.stringify(O), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
+end;
+
+class function TInventarioService.ActualizarSeccion(Id: Integer; const Campo: string;
+  Valor: JSValue): TResultado;
+var
+  O: TJSObject;
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  O := TJSObject.new;
+  O[Campo] := Valor;
+  R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/secciones?id=eq.' + IntToStr(Id),
+    TJSJSON.stringify(O), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R)
+  else if Trim(R.Body) = '[]' then
+  begin
+    Result.Ok := False;
+    Result.Error := 'No tienes permiso para cambiar secciones.';
+  end;
+end;
+
+class function TInventarioService.EliminarSeccion(Id: Integer): TResultado;
+var
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  R := await(TApiResponse, THttp.Send('DELETE', '/rest/v1/secciones?id=eq.' + IntToStr(Id),
+    '', Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+  begin
+    if R.Status = 409 then
+    begin
+      console.log('Error BD 409: ' + R.Body);
+      Result.Error := 'Tiene productos asociados. Desactívala en vez de borrarla.';
+    end
+    else
+      Result.Error := MensajeError(R);
+  end
+  else if Trim(R.Body) = '[]' then
+  begin
+    Result.Ok := False;
+    Result.Error := 'No tienes permiso para eliminar secciones.';
+  end;
+end;
+
+// -1 si no se pudo consultar. Cuenta todos los productos, también los ocultos.
+class function TInventarioService.ContarProductos(SeccionId: Integer): Integer;
+var
+  R: TApiResponse;
+begin
+  R := await(TApiResponse, THttp.Send('GET',
+    '/rest/v1/productos?select=id&seccion_id=eq.' + IntToStr(SeccionId) + '&limit=1',
+    '', Token));
+  if not R.Ok then
+  begin
+    console.log('Error BD ' + IntToStr(R.Status) + ': ' + R.Body);
+    Result := -1;
+    Exit;
+  end;
+  Result := TJSArray(TJSJSON.parse(R.Body)).length;
 end;
 
 end.

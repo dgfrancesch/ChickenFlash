@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chicken Flash · Editar secciones</title>
+<style></style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"></path></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"></path></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></symbol>
+</svg>
+
+<div class="sec" id="secPantalla">
+
+  <header class="top">
+    <button class="back" id="secVolver" type="button" data-a="volver" aria-label="Volver a inventario">
+      <svg class="i"><use href="#i-back"></use></svg>
+    </button>
+    <div class="who">
+      <b>Editar secciones</b>
+      <small>Cambia nombre, estado y orden</small>
+    </div>
+    <span class="net" id="secRed">En línea</span>
+  </header>
+
+  <div class="add-box">
+    <div class="add-row">
+      <input class="add-inp" id="secNuevoNombre" type="text" placeholder="Nueva sección (ej. Embutidos, Bebidas)..." autocomplete="off">
+      <button class="btn-new" id="secBtnAgregar" type="button" data-a="crear">
+        <svg class="i"><use href="#i-plus"></use></svg>Agregar
+      </button>
+    </div>
+    <div class="add-opts">
+      <span>Activa al agregar</span>
+      <button class="sw on" id="secNuevoActiva" type="button" data-a="nuevaactiva" role="switch" aria-checked="true" aria-label="Activa al agregar"></button>
+    </div>
+  </div>
+
+  <div class="list" id="secLista"></div>
+
+  <div class="toast" id="secToast" hidden>
+    <svg class="i"><use href="#i-check"></use></svg>
+    <span id="secToastTxt">Guardado</span>
+  </div>
+
+</div>
+</body>
+</html>

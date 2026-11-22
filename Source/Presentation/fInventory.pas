@@ -216,6 +216,9 @@ begin
   El := Ancestro(TJSElement(Event.target), '#btnTodos');
   if El <> nil then
     TForm3(TShell.Actual).FiltrarSeccion(0);
+      El := Ancestro(TJSElement(Event.target), '#btnEditarSecciones');
+  if El <> nil then
+    TNavegacion.IrARuta('secciones');
 end;
 
 { ---------- pantalla ---------- }

@@ -292,10 +292,6 @@
 }
 .inv .toast svg.i{width:16px;height:16px;color:var(--ok)}
 
-.item-foot{display:flex;justify-content:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
-.btn-edit{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:transparent;color:#fff;font-weight:600;cursor:pointer}
-.btn-edit .i{width:16px;height:16px;stroke:#f5b800;fill:none;stroke-width:2}
-
 /* PC */
 @media (min-width:900px){
   .inv{max-width:960px}
