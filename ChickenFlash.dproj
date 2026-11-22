@@ -137,6 +137,11 @@
         </DCCReference>
         <DCCReference Include="Source\Domain\Services\uInventarioService.pas"/>
         <DCCReference Include="Source\Infraestructure\uDom.pas"/>
+        <DCCReference Include="Source\Presentation\fSecciones.pas">
+            <Form>Form5</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -230,6 +235,7 @@
         <None Include="Css\uShell.css"/>
         <None Include="Css\Inventario.css"/>
         <None Include="Css\addProduct.css"/>
+        <None Include="Css\secciones.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -463,6 +469,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Css\dashboard.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\secciones.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

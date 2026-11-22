@@ -1,4 +1,125 @@
 object Form5: TForm5
   Width = 640
   Height = 480
+  OnCreate = WebFormCreate
+  object secNuevoActiva: TWebButton
+    Left = 0
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'secNuevoActiva'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object secPantalla: TWebHTMLDiv
+    Left = 101
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'secPantalla'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 1
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object secVolver: TWebButton
+    Left = 202
+    Top = 0
+    Width = 96
+    Height = 25
+    ChildOrder = 2
+    ElementID = 'secVolver'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object secNuevoNombre: TWebEdit
+    Left = 303
+    Top = 0
+    Width = 96
+    Height = 25
+    ChildOrder = 3
+    ElementID = 'secNuevoNombre'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object secRed: TWebHTMLSpan
+    Left = 404
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'secRed'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 4
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object secToastTxt: TWebHTMLSpan
+    Left = 505
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'secToastTxt'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 5
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object secBtnAgregar: TWebButton
+    Left = 0
+    Top = 30
+    Width = 96
+    Height = 25
+    ChildOrder = 6
+    ElementID = 'secBtnAgregar'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object secLista: TWebHTMLDiv
+    Left = 101
+    Top = 30
+    Width = 96
+    Height = 25
+    ElementID = 'secLista'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 7
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object secToast: TWebHTMLDiv
+    Left = 202
+    Top = 30
+    Width = 96
+    Height = 25
+    ElementID = 'secToast'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 8
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
 end

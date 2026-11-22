@@ -4,11 +4,25 @@ interface
 
 uses
   System.SysUtils, System.Classes, JS, Web, WEBLib.Graphics, WEBLib.Controls,
-  WEBLib.Forms, WEBLib.Dialogs, uInventarioService;
+  WEBLib.Forms, WEBLib.Dialogs, uInventarioService, WEBLib.WebCtrls,
+  Vcl.StdCtrls, WEBLib.StdCtrls, Vcl.Controls;
 
 type
   TForm5 = class(TWebForm)
+    secNuevoActiva: TWebButton;
+    secPantalla: TWebHTMLDiv;
+    secVolver: TWebButton;
+    secNuevoNombre: TWebEdit;
+    secRed: TWebHTMLSpan;
+    secToastTxt: TWebHTMLSpan;
+    secBtnAgregar: TWebButton;
+    secLista: TWebHTMLDiv;
+    secToast: TWebHTMLDiv;
     procedure WebFormCreate(Sender: TObject);
+    procedure secVolverClick(Sender: TObject);
+    procedure secBtnAgregarClick(Sender: TObject);
+    procedure secNuevoActivaClick(Sender: TObject);
+    procedure secNuevoNombreKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     FSecciones: array of TSeccion;
     FConfirmarId: Integer;     // sección que espera confirmar el borrado (0 = ninguna)
@@ -45,7 +59,7 @@ uses
 
 {$R *.dfm}
 
-{ ---------- eventos del DOM (un solo listener por tipo) ---------- }
+{ ---------- eventos de las tarjetas (se crean por código) ---------- }
 
 function AlClicSec(Event: TJSEvent): Boolean;
 var
@@ -63,13 +77,7 @@ begin
   A := string(B.getAttribute('data-a'));
   Id := StrToIntDef(string(B.getAttribute('data-id')), 0);
 
-  if A = 'volver' then
-    TNavegacion.IrARuta('inventario')
-  else if A = 'crear' then
-    P.Crear
-  else if A = 'nuevaactiva' then
-    P.AlternarNueva
-  else if A = 'act' then
+  if A = 'act' then
     P.CambiarActiva(Id)
   else if A = 'up' then
     P.Mover(Id, -1)
@@ -93,42 +101,62 @@ begin
     Trim(string(TJSHTMLInputElement(Inp).value)));
 end;
 
+// Enter en el nombre de una tarjeta = guardar (dispara el change)
 function AlTeclaSec(Event: TJSEvent): Boolean;
 var
   T: TJSElement;
-  Tipo: string;
 begin
   Result := True;
-  if not (TShell.Actual is TForm5) then Exit;
   if string(TJSKeyBoardEvent(Event).key) <> 'Enter' then Exit;
   T := TJSElement(Event.target);
-  Tipo := string(T.getAttribute('data-a'));
-  if Tipo = 'rename' then
+  if string(T.getAttribute('data-a')) = 'rename' then
   begin
     asm
       T.blur();
     end;
-  end
-  else if string(T.id) = 'secNuevoNombre' then
-    TForm5(TShell.Actual).Crear;
+  end;
 end;
 
 { ---------- pantalla ---------- }
 
 procedure TForm5.WebFormCreate(Sender: TObject);
-var
-  Raiz: TJSElement;
 begin
   TShell.Activar('inventario');   // la barra inferior sigue marcando Inventario
   TShell.Actual := Self;
   FNuevaActiva := True;
   FConfirmarId := 0;
 
-  Raiz := document.getElementById('secPantalla');
-  Raiz.addEventListener('click', @AlClicSec);
-  Raiz.addEventListener('change', @AlCambiarSec);
-  Raiz.addEventListener('keydown', @AlTeclaSec);
+  secVolver.OnClick := secVolverClick;
+  secBtnAgregar.OnClick := secBtnAgregarClick;
+  secNuevoActiva.OnClick := secNuevoActivaClick;
+  secNuevoNombre.OnKeyDown := secNuevoNombreKeyDown;
+
+  // la lista se pinta por código, así que sus clics van por un solo listener
+  secLista.ElementHandle.addEventListener('click', @AlClicSec);
+  secLista.ElementHandle.addEventListener('change', @AlCambiarSec);
+  secLista.ElementHandle.addEventListener('keydown', @AlTeclaSec);
   Cargar;
+end;
+
+procedure TForm5.secVolverClick(Sender: TObject);
+begin
+  TNavegacion.IrARuta('inventario');
+end;
+
+procedure TForm5.secBtnAgregarClick(Sender: TObject);
+begin
+  Crear;
+end;
+
+procedure TForm5.secNuevoActivaClick(Sender: TObject);
+begin
+  AlternarNueva;
+end;
+
+procedure TForm5.secNuevoNombreKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = 13 then
+    Crear;
 end;
 
 procedure TForm5.Cargar;
@@ -138,13 +166,13 @@ var
   i, j: Integer;
 begin
   if Length(FSecciones) = 0 then
-    document.getElementById('secLista').innerHTML := '<div class="empty">Cargando secciones...</div>';
+    secLista.ElementHandle.innerHTML := '<div class="empty">Cargando secciones...</div>';
 
   RS := await(TResultadoSecciones, TInventarioService.CargarSeccionesTodas);
   if TShell.Actual <> Self then Exit;
   if not RS.Ok then
   begin
-    document.getElementById('secLista').innerHTML := '<div class="empty">' + Esc(RS.Error) + '</div>';
+    secLista.ElementHandle.innerHTML := '<div class="empty">' + Esc(RS.Error) + '</div>';
     Exit;
   end;
 
@@ -168,7 +196,7 @@ var
 begin
   if Length(FSecciones) = 0 then
   begin
-    document.getElementById('secLista').innerHTML :=
+    secLista.ElementHandle.innerHTML :=
       '<div class="empty">Aún no hay secciones. Agrega la primera arriba.</div>';
     Exit;
   end;
@@ -218,7 +246,7 @@ begin
         '</div>' +
       '</article>';
   end;
-  document.getElementById('secLista').innerHTML := Html;
+  secLista.ElementHandle.innerHTML := Html;
 end;
 
 function TForm5.Buscar(Id: Integer): Integer;
@@ -252,8 +280,8 @@ procedure TForm5.Aviso(const Msg: string);
 var
   El: TJSElement;
 begin
-  document.getElementById('secToastTxt').textContent := Msg;
-  El := document.getElementById('secToast');
+  secToastTxt.ElementHandle.textContent := Msg;
+  El := secToast.ElementHandle;
   El.removeAttribute('hidden');
   asm
     clearTimeout(window.__secToast);
@@ -262,30 +290,25 @@ begin
 end;
 
 procedure TForm5.AlternarNueva;
-var
-  El: TJSElement;
 begin
   FNuevaActiva := not FNuevaActiva;
-  El := document.getElementById('secNuevoActiva');
-  PonerClase(El, 'on', FNuevaActiva);
+  PonerClase(secNuevoActiva.ElementHandle, 'on', FNuevaActiva);
   if FNuevaActiva then
-    El.setAttribute('aria-checked', 'true')
+    secNuevoActiva.ElementHandle.setAttribute('aria-checked', 'true')
   else
-    El.setAttribute('aria-checked', 'false');
+    secNuevoActiva.ElementHandle.setAttribute('aria-checked', 'false');
 end;
 
 { ---------- acciones ---------- }
 
 procedure TForm5.Crear;
 var
-  Inp: TJSHTMLInputElement;
   Nombre: string;
   Orden, i: Integer;
   R: TResultado;
 begin
   if FCreando then Exit;
-  Inp := TJSHTMLInputElement(document.getElementById('secNuevoNombre'));
-  Nombre := Trim(string(Inp.value));
+  Nombre := Trim(secNuevoNombre.Text);
   if Nombre = '' then
   begin
     Aviso('Escribe el nombre de la sección.');
@@ -310,7 +333,7 @@ begin
     Aviso(R.Error);
     Exit;
   end;
-  Inp.value := '';
+  secNuevoNombre.Text := '';
   Aviso('Sección agregada');
   Cargar;
 end;

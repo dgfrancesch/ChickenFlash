@@ -45,6 +45,7 @@
 }
 .agr .fg{display:flex;flex-direction:column;gap:6px}
 .agr .fg label{font-size:12px;color:var(--mut);font-weight:600}
+.agr .fg{min-width:0;overflow-x:clip}
 .agr .inp{
   width:100%;height:44px;background:var(--field);border:1px solid var(--line);
   border-radius:12px;padding:0 14px;color:var(--txt);font-size:15px;outline:0;
@@ -56,8 +57,7 @@
 /* Botones segmentados */
 .agr .seg{display:grid;gap:8px}
 .agr .seg.c2{grid-template-columns:repeat(2,1fr)}
-.agr .seg.sec{display:flex;flex-wrap:wrap}
-.agr .seg.sec button{flex:1 1 calc(33% - 8px)}
+.agr .seg.c3{grid-template-columns:repeat(3,1fr)}
 .agr .seg button{
   height:42px;border-radius:12px;background:var(--field);border:1px solid var(--line);
   color:#cbd5e1;font-size:13px;font-weight:600;padding:0 8px;
@@ -65,6 +65,44 @@
 }
 .agr .seg button.on{
   background:rgba(234,179,8,.16);border-color:var(--gold);color:var(--gold);font-weight:700;
+}
+
+/* Secciones: 3 visibles, el resto se desplaza a la derecha.
+   Por ID para ganar a las clases y a los estilos inline del componente. */
+.agr #divAddSeccion{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  gap:8px!important;
+  position:static!important;
+  left:auto!important;
+  top:auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  padding:0 0 6px!important;
+    margin:0!important;
+  right:auto!important;
+  transform:none!important;
+  background:transparent!important;
+  border:0!important;
+  box-sizing:border-box!important;
+  scrollbar-width:thin;
+  scrollbar-color:var(--line) transparent;
+  -webkit-overflow-scrolling:touch;
+}
+.agr #divAddSeccion::-webkit-scrollbar{height:4px}
+.agr #divAddSeccion::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
+.agr #divAddSeccion button{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:calc((100% - 16px) / 3)!important;
+  height:42px!important;
+  padding:0 14px;
+  white-space:nowrap;
 }
 
 /* Sugerencias rápidas */
@@ -155,9 +193,6 @@
 }
 .agr .toast svg.i{width:16px;height:16px;color:var(--ok)}
 
-/* tres opciones de forma de venta */
-.agr .seg.c3{grid-template-columns:repeat(3,1fr)}
-
 /* tres costos en una fila */
 .agr .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 
@@ -171,3 +206,15 @@
 .agr .calc b{display:block;font-size:16px;margin-top:2px;font-variant-numeric:tabular-nums}
 .agr .calc .ok{color:var(--ok)}
 .agr .calc .neg{color:#fca5a5}
+
+/* Los TWebHTMLDiv traen position/width/height inline: se anulan por ID */
+.agr #divHints,
+.agr #divPaquete,
+.agr #divAddFotoPrev,
+.agr #lblAddError{
+  position:static!important;
+  left:auto!important;
+  top:auto!important;
+  width:auto!important;
+  height:auto!important;
+}
