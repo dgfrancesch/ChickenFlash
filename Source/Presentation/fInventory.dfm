@@ -46,7 +46,7 @@ object Form3: TForm3
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'lblInicial'
+    ElementID = 'lblInvInicial'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     ChildOrder = 1
@@ -59,7 +59,7 @@ object Form3: TForm3
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'lblRed'
+    ElementID = 'lblInvRed'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     ChildOrder = 2
@@ -67,12 +67,12 @@ object Form3: TForm3
     ElementFont = efCSS
     Role = ''
   end
-  object divFiltros: TWebHTMLDiv
+  object divInvFiltros: TWebHTMLDiv
     Left = 303
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'divFiltros'
+    ElementID = 'divInvFiltros'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     ChildOrder = 3
@@ -442,7 +442,7 @@ object Form3: TForm3
     Width = 96
     Height = 25
     ChildOrder = 32
-    ElementID = 'edtBuscar'
+    ElementID = 'edtInvBuscar'
     ElementFont = efCSS
     ElementPosition = epIgnore
     HeightStyle = ssAuto

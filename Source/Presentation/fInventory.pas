@@ -12,7 +12,7 @@ type
     divModal: TWebHTMLDiv;
     lblInicial: TWebHTMLDiv;
     lblRed: TWebHTMLSpan;
-    divFiltros: TWebHTMLDiv;
+    divInvFiltros: TWebHTMLDiv;
     btnKpiBajo: TWebButton;
     btnAgregar: TWebButton;
     btnUniLb: TWebButton;
@@ -66,6 +66,8 @@ type
     function Coincide(P: TProducto): Boolean;
     function NombreSeccion(Id: Integer): string;
     procedure MostrarAviso(const Msg: string);
+        [async]
+    procedure AjustarStock(Id: Integer; Valor: Double; Relativo: Boolean);
   public
   end;
 
@@ -137,10 +139,65 @@ begin
           '</div>' +
         '</div>' +
       '</div>' +
+      '<div class="item-actions">' +
+        '<div class="stock-ctl">' +
+          '<span class="stock-lbl">Ajustar:</span>' +
+          '<div class="pill">' +
+            '<button class="rb" type="button" data-accion="menos" aria-label="Quitar"><svg class="i"><use href="#i-minus"></use></svg></button>' +
+            '<input class="q" type="text" inputmode="decimal" data-accion="cantidad" value="' + Numero(P.Stock, 3) + '" aria-label="Cantidad">' +
+            '<button class="rb g" type="button" data-accion="mas" aria-label="Agregar"><svg class="i"><use href="#i-plus"></use></svg></button>' +
+          '</div>' +
+        '</div>' +
+        '<button class="edit-btn" type="button" data-accion="editar"><svg class="i"><use href="#i-edit"></use></svg>Editar</button>' +
+      '</div>' +
     '</div>';
 end;
 
 { ---------- clic en los chips de sección ---------- }
+
+function AlClicLista(Event: TJSEvent): Boolean;
+var
+  Btn, Item: TJSElement;
+  Accion: string;
+  Id: Integer;
+begin
+  Result := True;
+  Btn := Ancestro(TJSElement(Event.target), '[data-accion]');
+  if Btn = nil then Exit;
+  Item := Ancestro(Btn, '.item[data-id]');
+  if Item = nil then Exit;
+  Id := StrToIntDef(string(Item.getAttribute('data-id')), 0);
+  Accion := string(Btn.getAttribute('data-accion'));
+
+  if Accion = 'editar' then
+  begin
+    TShell.EditarId := Id;
+    TNavegacion.IrARuta('agregar');
+  end
+  else if not (TShell.Actual is TForm3) then Exit
+  else if Accion = 'mas' then
+    TForm3(TShell.Actual).AjustarStock(Id, 1, True)
+  else if Accion = 'menos' then
+    TForm3(TShell.Actual).AjustarStock(Id, -1, True);
+end;
+
+// Al escribir una cantidad a mano en el cuadro del medio
+function AlCambiarLista(Event: TJSEvent): Boolean;
+var
+  Inp, Item: TJSElement;
+  Txt: string;
+begin
+  Result := True;
+  Inp := Ancestro(TJSElement(Event.target), 'input[data-accion="cantidad"]');
+  if Inp = nil then Exit;
+  Item := Ancestro(Inp, '.item[data-id]');
+  if Item = nil then Exit;
+  if not (TShell.Actual is TForm3) then Exit;
+  Txt := StringReplace(string(TJSHTMLInputElement(Inp).value), ',', '.', []);
+  TForm3(TShell.Actual).AjustarStock(
+    StrToIntDef(string(Item.getAttribute('data-id')), 0),
+    StrToFloatDef(Txt, 0), False);
+end;
 
 function AlClicFiltros(Event: TJSEvent): Boolean;
 var
@@ -177,7 +234,9 @@ begin
   btnAgregar.OnClick := btnAgregarClick;
   btnKpiActivos.OnClick := btnKpiActivosClick;
   btnKpiBajo.OnClick := btnKpiBajoClick;
-  divFiltros.ElementHandle.addEventListener('click', @AlClicFiltros);
+  divInvFiltros.ElementHandle.addEventListener('click', @AlClicFiltros);
+    divLista.ElementHandle.addEventListener('click', @AlClicLista);
+      divLista.ElementHandle.addEventListener('change', @AlCambiarLista);
   Cargar;
 end;
 
@@ -324,6 +383,51 @@ begin
       Html := '<div class="empty">No hay productos con este filtro.</div>';
   end;
   divLista.ElementHandle.innerHTML := Html;
+end;
+
+procedure TForm3.AjustarStock(Id: Integer; Valor: Double; Relativo: Boolean);
+var
+  P: TProducto;
+  i: Integer;
+  Nuevo, Anterior: Double;
+  R: TResultado;
+begin
+  P := nil;
+  for i := 0 to High(FProductos) do
+    if FProductos[i].Id = Id then
+      P := FProductos[i];
+  if P = nil then Exit;
+
+  Anterior := P.Stock;
+  if Relativo then
+    Nuevo := P.Stock + Valor
+  else
+    Nuevo := Valor;
+  if Nuevo < 0 then Nuevo := 0;
+  if P.TipoVenta = 'peso' then
+    Nuevo := Round(Nuevo * 1000) / 1000
+  else
+    Nuevo := Round(Nuevo);                 // paquetes y unidades enteros
+
+  if Nuevo = Anterior then
+  begin
+    PintarLista;                           // restaura el texto del cuadro
+    Exit;
+  end;
+
+  P.Stock := Nuevo;                        // se ve al instante
+  PintarKpis;
+  PintarLista;
+
+  R := await(TResultado, TInventarioService.ActualizarStock(Id, Nuevo));
+  if TShell.Actual <> Self then Exit;
+  if not R.Ok then
+  begin
+    P.Stock := Anterior;                   // si falla, vuelve al valor anterior
+    PintarKpis;
+    PintarLista;
+    MostrarAviso(R.Error);
+  end;
 end;
 
 // Activos = productos visibles; Stock bajo = visibles con stock <= LIMITE_STOCK_BAJO

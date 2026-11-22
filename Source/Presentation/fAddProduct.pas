@@ -54,6 +54,10 @@ type
     FSeccionId: Integer;
     FUnidad: string;      // 'lb', 'paq' o 'u'
     FVisible: Boolean;
+      FEditId: Integer;
+    [async]
+    procedure CargarParaEditar;
+    procedure PonerVisible(Si: Boolean);
     [async]
     procedure CargarSecciones;
     [async]
@@ -74,7 +78,7 @@ var
 implementation
 
 uses
-  uShell, uNavegacion, uInventarioService;
+  uShell, uNavegacion, uInventarioService, uDom;
 
 {$R *.dfm}
 
@@ -98,6 +102,14 @@ end;
 function Num(El: TJSElement): Double;
 begin
   Result := StrToFloatDef(string(TJSHTMLInputElement(El).value), 0);
+end;
+
+procedure PonerNum(El: TJSElement; V: Double);
+begin
+  if V = 0 then
+    TJSHTMLInputElement(El).value := ''
+  else
+    TJSHTMLInputElement(El).value := Numero(V, 3);
 end;
 
 function Cup(V: Double): string;
@@ -159,6 +171,14 @@ begin
   TShell.Actual := Self;
   FVisible := True;
 
+    FEditId := TShell.EditarId;
+  TShell.EditarId := 0;
+  if FEditId > 0 then
+  begin
+    document.querySelector('#divAgregar .who b').textContent := 'Editar producto';
+    lblAddGuardar.ElementHandle.textContent := 'Guardar cambios';
+  end;
+
   btnAddGuardar.OnClick := btnGuardarClick;
   btnAddUniLb.OnClick := btnAddUniLbClick;
   btnAddUniPaq.OnClick := btnUniPaqClick;
@@ -198,6 +218,59 @@ begin
       + Esc(R.Items[i].Nombre) + '</button>';
   divAddSeccion.ElementHandle.innerHTML := Html;
   MarcarSeccion(R.Items[0].Id);
+    if FEditId > 0 then
+    CargarParaEditar;
+end;
+
+procedure TForm4.PonerVisible(Si: Boolean);
+begin
+  FVisible := Si;
+  PonerClase(btnAddVisible.ElementHandle, 'on', Si);
+  if Si then
+    btnAddVisible.ElementHandle.setAttribute('aria-checked', 'true')
+  else
+    btnAddVisible.ElementHandle.setAttribute('aria-checked', 'false');
+end;
+
+procedure TForm4.CargarParaEditar;
+var
+  RP: TResultadoProductos;
+  P: TProducto;
+  i: Integer;
+begin
+  RP := await(TResultadoProductos, TInventarioService.CargarProductos);
+  if not RP.Ok then
+  begin
+    MostrarError(RP.Error);
+    Exit;
+  end;
+  P := nil;
+  for i := 0 to High(RP.Items) do
+    if RP.Items[i].Id = FEditId then
+      P := RP.Items[i];
+  if P = nil then
+  begin
+    MostrarError('No se encontró el producto.');
+    Exit;
+  end;
+
+  edtAddNombre.Text := P.Nombre;
+  edtAddNota.Text := P.Nota;
+  MarcarSeccion(P.SeccionId);
+  if P.TipoVenta = 'paquete_peso' then
+    PonerUnidad('paq')
+  else if P.TipoVenta = 'unidad' then
+    PonerUnidad('u')
+  else
+    PonerUnidad('lb');
+  PonerNum(edtLibras.ElementHandle, P.LibrasPorPaquete);
+  PonerNum(edtAddCosto.ElementHandle, P.Costo);
+  PonerNum(edtAddExtra.ElementHandle, P.CostoExtra);
+  PonerNum(edtAddInsumo.ElementHandle, P.Insumo);
+  PonerNum(edtAddPrecio.ElementHandle, P.Precio);
+  PonerNum(edtAddStock.ElementHandle, P.Stock);
+  PonerVisible(P.Visible);
+  Recalcular;
 end;
 
 procedure TForm4.MarcarSeccion(Id: Integer);
@@ -277,12 +350,7 @@ end;
 
 procedure TForm4.btnVisibleClick(Sender: TObject);
 begin
-  FVisible := not FVisible;
-  PonerClase(btnAddVisible.ElementHandle, 'on', FVisible);
-  if FVisible then
-    btnAddVisible.ElementHandle.setAttribute('aria-checked', 'true')
-  else
-    btnAddVisible.ElementHandle.setAttribute('aria-checked', 'false');
+  PonerVisible(not FVisible);
 end;
 
 procedure TForm4.btnGuardarClick(Sender: TObject);
@@ -342,15 +410,21 @@ begin
     Exit;
   end;
 
-  FGuardando := True;
+   FGuardando := True;
   Ocupado(True);
-  R := await(TResultado, TInventarioService.CrearProducto(P));
+  if FEditId > 0 then
+    R := await(TResultado, TInventarioService.ActualizarProducto(FEditId, P))
+  else
+    R := await(TResultado, TInventarioService.CrearProducto(P));
   Ocupado(False);
   FGuardando := False;
 
   if R.Ok then
   begin
-    TShell.Aviso := 'Producto guardado en inventario';
+    if FEditId > 0 then
+      TShell.Aviso := 'Producto actualizado'
+    else
+      TShell.Aviso := 'Producto guardado en inventario';
     TNavegacion.IrARuta('inventario');
   end
   else
@@ -362,6 +436,8 @@ begin
   btnAddGuardar.Enabled := not Si;
   if Si then
     lblAddGuardar.ElementHandle.textContent := 'Guardando...'
+  else if FEditId > 0 then
+    lblAddGuardar.ElementHandle.textContent := 'Guardar cambios'
   else
     lblAddGuardar.ElementHandle.textContent := 'Guardar producto';
 end;

@@ -30,6 +30,9 @@ type
     Stock: Double;
     Nota: string;
     Visible: Boolean;
+        Costo: Double;
+    CostoExtra: Double;
+    Insumo: Double;
   end;
 
   TResultadoProductos = class
@@ -67,6 +70,10 @@ type
     class function CargarProductos: TResultadoProductos;
     [async]
     class function CrearProducto(P: TProductoNuevo): TResultado;
+        [async]
+    class function ActualizarProducto(Id: Integer; P: TProductoNuevo): TResultado;
+        [async]
+    class function ActualizarStock(Id: Integer; Stock: Double): TResultado;
   end;
 
 implementation
@@ -163,8 +170,9 @@ var
 begin
   Result := TResultadoProductos.Create;
   R := await(TApiResponse, THttp.Send('GET',
-    '/rest/v1/productos?select=id,seccion_id,nombre,tipo_venta,libras_por_paquete,'
-    + 'precio_cup,stock,nota,visible&activo=eq.true&order=orden.asc,nombre.asc',
+        '/rest/v1/productos?select=id,seccion_id,nombre,tipo_venta,libras_por_paquete,'
+    + 'precio_cup,costo_cup,costo_extra_cup,insumo_cup,stock,nota,visible'
+    + '&activo=eq.true&order=orden.asc,nombre.asc',
     '', Token));
   if not R.Ok then
   begin
@@ -184,6 +192,9 @@ begin
     P.TipoVenta := TextoJS(Obj['tipo_venta']);
     P.LibrasPorPaquete := NumeroJS(Obj['libras_por_paquete']);
     P.Precio := NumeroJS(Obj['precio_cup']);
+        P.Costo := NumeroJS(Obj['costo_cup']);
+    P.CostoExtra := NumeroJS(Obj['costo_extra_cup']);
+    P.Insumo := NumeroJS(Obj['insumo_cup']);
     P.Stock := NumeroJS(Obj['stock']);
     P.Nota := TextoJS(Obj['nota']);
     P.Visible := Boolean(Obj['visible']);
@@ -192,13 +203,10 @@ begin
   Result.Ok := True;
 end;
 
-class function TInventarioService.CrearProducto(P: TProductoNuevo): TResultado;
+function ArmarJson(P: TProductoNuevo; Editando: Boolean): string;
 var
   O: TJSObject;
-  R: TApiResponse;
 begin
-  Result := TResultado.Create;
-
   O := TJSObject.new;
   O['seccion_id'] := P.SeccionId;
   O['nombre'] := Trim(P.Nombre);
@@ -208,26 +216,64 @@ begin
   O['precio_cup'] := Redondear(P.Precio, 2);
   O['visible'] := P.Visible;
   if Trim(P.Nota) <> '' then
-    O['nota'] := Trim(P.Nota);
+    O['nota'] := Trim(P.Nota)
+  else if Editando then
+    O['nota'] := null;                          // permite borrar la nota
 
   if P.TipoVenta = 'paq' then
   begin
     O['tipo_venta'] := TV_PAQUETE;
     O['libras_por_paquete'] := Redondear(P.LibrasPorPaquete, 3);
-    O['stock'] := Round(P.Stock);                 // paquetes enteros
+    O['stock'] := Round(P.Stock);
   end
   else if P.TipoVenta = 'u' then
   begin
     O['tipo_venta'] := TV_UNIDAD;
-    O['stock'] := Round(P.Stock);                 // unidades enteras
+    O['stock'] := Round(P.Stock);
+    if Editando then O['libras_por_paquete'] := null;
   end
   else
   begin
     O['tipo_venta'] := TV_LIBRA;
-    O['stock'] := Redondear(P.Stock, 3);          // libras con hasta 3 decimales
+    O['stock'] := Redondear(P.Stock, 3);
+    if Editando then O['libras_por_paquete'] := null;
   end;
+  Result := TJSJSON.stringify(O);
+end;
 
+class function TInventarioService.CrearProducto(P: TProductoNuevo): TResultado;
+var
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
   R := await(TApiResponse, THttp.Send('POST', '/rest/v1/productos',
+    ArmarJson(P, False), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
+end;
+
+class function TInventarioService.ActualizarProducto(Id: Integer; P: TProductoNuevo): TResultado;
+var
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
+    ArmarJson(P, True), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
+end;
+
+class function TInventarioService.ActualizarStock(Id: Integer; Stock: Double): TResultado;
+var
+  O: TJSObject;
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  O := TJSObject.new;
+  O['stock'] := Stock;
+  R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
     TJSJSON.stringify(O), Token));
   Result.Ok := R.Ok;
   if not R.Ok then

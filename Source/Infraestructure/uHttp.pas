@@ -38,9 +38,14 @@ begin
     if Token <> '' then
       Req.Headers.AddPair('Authorization', 'Bearer ' + Token);
 
-    if Method = 'POST' then
+      if Method = 'POST' then
     begin
       Req.Command := httpPOST;
+      Req.PostData := Body;
+    end
+    else if Method = 'PATCH' then
+    begin
+      Req.Command := httpPATCH;
       Req.PostData := Body;
     end
     else

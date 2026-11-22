@@ -13,6 +13,7 @@ type
   class var Actual: TWebForm;
   class var Destino: string;
       class var Aviso: string;       // mensaje que la siguiente pantalla muestra al abrir
+      class var EditarId: Integer;   // 0 = agregar, >0 = editar ese producto
     class var AlNavegar: TShellNavegarEvent;
     class procedure Iniciar;                       // crea todo una sola vez
     class procedure Activar(const ADestino: string); // resalta vender/inventario/caja
