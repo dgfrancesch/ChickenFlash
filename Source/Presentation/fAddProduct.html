@@ -23,70 +23,104 @@
       <b>Agregar producto</b>
       <small>Chicken Flash · Nuevo en inventario</small>
     </div>
-    <span class="net" id="lblRed">En línea</span>
+    <span class="net" id="lblAddRed">En línea</span>
   </header>
 
   <div class="card">
 
     <div class="fg">
       <label>Foto del producto (opcional)</label>
-      <input id="edtFoto" type="file" accept="image/*" hidden>
-      <button class="photo-drop" id="btnFoto" type="button">
+      <input id="edtAddFoto" type="file" accept="image/*" hidden>
+      <button class="photo-drop" id="btnAddFoto" type="button">
         <span class="photo-ico"><svg class="i"><use href="#i-cam"></use></svg></span>
         <span class="photo-txt">
           <b>Agregar foto del producto</b>
           <small>Toca para tomar foto o elegir de galería</small>
         </span>
       </button>
-      <div class="photo-prev" id="divFotoPrev" hidden>
-        <img id="imgFoto" src alt="Vista previa del producto">
+      <div class="photo-prev" id="divAddFotoPrev" hidden>
+        <img id="imgAddFoto" src alt="Vista previa del producto">
         <div class="photo-meta">
           <b>Foto seleccionada</b>
           <div class="photo-btns">
-            <button class="p-btn" id="btnCambiarFoto" type="button">Cambiar foto</button>
-            <button class="p-btn del" id="btnQuitarFoto" type="button">Quitar</button>
+            <button class="p-btn" id="btnAddCambiarFoto" type="button">Cambiar foto</button>
+            <button class="p-btn del" id="btnAddQuitarFoto" type="button">Quitar</button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="fg">
-      <label for="edtNombre">Nombre del producto</label>
-      <input class="inp" id="edtNombre" type="text" placeholder="Ej. Pechuga de pollo, Arroz...">
+      <label for="edtAddNombre">Nombre del producto</label>
+      <input class="inp" id="edtAddNombre" type="text" placeholder="Ej. Pechuga de pollo, Arroz...">
     </div>
 
     <div class="fg">
       <label>Sección</label>
-      <div class="seg sec" id="divSeccion"></div>
+      <div class="seg sec" id="divAddSeccion"></div>
     </div>
 
     <div class="fg">
       <label>Forma de venta</label>
-      <div class="seg c2">
-        <button class="on" id="btnUniLb" type="button">Por libra (lb)</button>
-        <button id="btnUniPaq" type="button">Por paquete (paq)</button>
+      <div class="seg c3">
+        <button class="on" id="btnAddUniLb" type="button">Por libra</button>
+        <button id="btnAddUniPaq" type="button">Por paquete</button>
+        <button id="btnAddUniU" type="button">Por unidad</button>
+      </div>
+    </div>
+
+    <div class="fg" id="divPaquete" hidden>
+      <label for="edtLibras">Libras por paquete</label>
+      <input class="inp" id="edtLibras" type="number" inputmode="decimal" min="0" step="any" placeholder="5">
+      <div class="hints" id="divHints">
+        <button type="button" data-h="2">2 lb</button>
+        <button type="button" data-h="5">5 lb</button>
+        <button type="button" data-h="10">10 lb</button>
       </div>
     </div>
 
     <div class="fg">
-      <label for="edtDetalle">Presentación / detalle</label>
-      <input class="inp" id="edtDetalle" type="text" placeholder="Ej. Por libra o Paquete 5 lb">
-      <div class="hints" id="divHints">
-        <button type="button" data-h="Por libra">Por libra</button>
-        <button type="button" data-h="Paquete 2 lb">Paquete 2 lb</button>
-        <button type="button" data-h="Paquete 5 lb">Paquete 5 lb</button>
-        <button type="button" data-h="Paquete 10 lb">Paquete 10 lb</button>
+      <label for="edtAddNota">Nota (opcional)</label>
+      <input class="inp" id="edtAddNota" type="text" placeholder="Ej. 1lb-950, 850+20">
+    </div>
+
+    <div class="fg">
+      <label>Costos por unidad de venta (CUP)</label>
+      <div class="row3">
+        <div class="fg">
+          <label for="edtAddCosto">Costo</label>
+          <input class="inp" id="edtAddCosto" type="number" inputmode="decimal" min="0" step="any" placeholder="1900">
+        </div>
+        <div class="fg">
+          <label for="edtAddExtra">Costo extra</label>
+          <input class="inp" id="edtAddExtra" type="number" inputmode="decimal" min="0" step="any" placeholder="384">
+        </div>
+        <div class="fg">
+          <label for="edtAddInsumo">Insumo</label>
+          <input class="inp" id="edtAddInsumo" type="number" inputmode="decimal" min="0" step="any" placeholder="16">
+        </div>
       </div>
     </div>
 
     <div class="row2">
       <div class="fg">
-        <label for="edtPrecio">Precio (CUP)</label>
-        <input class="inp" id="edtPrecio" type="number" inputmode="decimal" min="1" step="any" placeholder="450">
+        <label for="edtAddPrecio">Precio de venta (CUP)</label>
+        <input class="inp" id="edtAddPrecio" type="number" inputmode="decimal" min="1" step="any" placeholder="3000">
       </div>
       <div class="fg">
-        <label for="edtStock">Stock inicial (<span id="lblUnidad">lb</span>)</label>
-        <input class="inp" id="edtStock" type="number" inputmode="decimal" min="0" step="any" placeholder="20">
+        <label for="edtAddStock">Stock inicial (<span id="lblUnidad">lb</span>)</label>
+        <input class="inp" id="edtAddStock" type="number" inputmode="decimal" min="0" step="0.001" placeholder="20">
+      </div>
+    </div>
+
+    <div class="calc">
+      <div>
+        <small>Costo total</small>
+        <b id="lblAddCostoTotal">0 CUP</b>
+      </div>
+      <div>
+        <small>Ganancia por unidad</small>
+        <b class="ok" id="lblAddNeto">0 CUP</b>
       </div>
     </div>
 
@@ -95,24 +129,24 @@
         <b>Visible en tienda y vender</b>
         <small>Aparecerá de inmediato en el mostrador</small>
       </div>
-      <button class="sw on" id="btnVisible" type="button" role="switch" aria-checked="true"></button>
+      <button class="sw on" id="btnAddVisible" type="button" role="switch" aria-checked="true"></button>
     </div>
 
-    <div class="err" id="lblError" hidden></div>
+    <div class="err" id="lblAddError" hidden></div>
 
     <div class="actions">
       <button class="btn-save" id="btnAddGuardar" type="button">
         <svg class="i"><use href="#i-check"></use></svg>
-        <span id="lblGuardar">Guardar producto</span>
+        <span id="lblAddGuardar">Guardar producto</span>
       </button>
       <button class="btn-cancel" id="btnAddCancelar" type="button">Cancelar</button>
     </div>
 
   </div>
 
-  <div class="toast" id="divToast" hidden>
+  <div class="toast" id="divAddToast" hidden>
     <svg class="i"><use href="#i-check"></use></svg>
-    <span id="lblToast">Producto guardado en inventario</span>
+    <span id="lblAddToast">Producto guardado en inventario</span>
   </div>
 
 </div>

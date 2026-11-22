@@ -12,6 +12,7 @@ type
   public
   class var Actual: TWebForm;
   class var Destino: string;
+      class var Aviso: string;       // mensaje que la siguiente pantalla muestra al abrir
     class var AlNavegar: TShellNavegarEvent;
     class procedure Iniciar;                       // crea todo una sola vez
     class procedure Activar(const ADestino: string); // resalta vender/inventario/caja

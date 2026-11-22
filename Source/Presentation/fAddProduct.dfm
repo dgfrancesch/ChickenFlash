@@ -2,125 +2,57 @@ object Form4: TForm4
   Width = 640
   Height = 480
   OnCreate = WebFormCreate
-  object imgFoto: TWebImageControl
-    Left = 0
-    Top = 30
+  object imgAddFoto: TWebImageControl
+    Left = 101
+    Top = 60
     Width = 96
     Height = 25
-    ElementID = 'imgFoto'
+    ElementID = 'imgAddFoto'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     HeightPercent = 100.000000000000000000
     WidthPercent = 100.000000000000000000
-    ChildOrder = 6
+    ChildOrder = 13
     ElementFont = efCSS
     ElementPosition = epIgnore
   end
-  object lblUnidad: TWebHTMLSpan
+  object divAddSeccion: TWebHTMLDiv
     Left = 0
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'lblUnidad'
+    ElementID = 'divAddSeccion'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     ElementPosition = epIgnore
     ElementFont = efCSS
     Role = ''
   end
-  object divSeccion: TWebHTMLDiv
+  object btnAddCambiarFoto: TWebButton
     Left = 101
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'divSeccion'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
     ChildOrder = 1
-    ElementPosition = epIgnore
+    ElementID = 'btnAddCambiarFoto'
     ElementFont = efCSS
-    Role = ''
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
   end
-  object lblGuardar: TWebHTMLSpan
+  object edtAddCosto: TWebSpinEdit
     Left = 202
     Top = 0
     Width = 96
     Height = 25
-    ElementID = 'lblGuardar'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
-    ChildOrder = 2
-    ElementPosition = epIgnore
-    ElementFont = efCSS
-    Role = ''
-  end
-  object btnAddCancelar: TWebButton
-    Left = 303
-    Top = 0
-    Width = 96
-    Height = 25
-    ChildOrder = 3
-    ElementID = 'btnAddCancelar'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-    OnClick = btnAddCancelarClick
-  end
-  object lblRed: TWebHTMLSpan
-    Left = 404
-    Top = 0
-    Width = 96
-    Height = 25
-    ElementID = 'lblRed'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
-    ChildOrder = 4
-    ElementPosition = epIgnore
-    ElementFont = efCSS
-    Role = ''
-  end
-  object edtDetalle: TWebEdit
-    Left = 505
-    Top = 0
-    Width = 96
-    Height = 25
-    ChildOrder = 5
-    ElementID = 'edtDetalle'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object btnUniLb: TWebButton
-    Left = 101
-    Top = 30
-    Width = 96
-    Height = 25
-    ChildOrder = 7
-    ElementID = 'btnUniLb'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
-  end
-  object edtPrecio: TWebSpinEdit
-    Left = 202
-    Top = 30
-    Width = 96
-    Height = 25
-    ElementID = 'edtPrecio'
+    ElementID = 'edtAddInsumo'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     AutoSize = False
     BorderStyle = bsSingle
-    ChildOrder = 8
+    ChildOrder = 2
     Color = clWhite
     ElementFont = efCSS
     ElementPosition = epIgnore
@@ -130,25 +62,39 @@ object Form4: TForm4
     Role = ''
     Value = 0
   end
-  object divAgregar: TWebHTMLDiv
+  object lblUnidad: TWebHTMLSpan
     Left = 303
-    Top = 30
+    Top = 0
     Width = 96
     Height = 25
-    ElementID = 'divAgregar'
+    ElementID = 'lblUnidad'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
-    ChildOrder = 9
+    ChildOrder = 3
     ElementPosition = epIgnore
     ElementFont = efCSS
     Role = ''
   end
-  object btnAddGuardar: TWebButton
-    Left = 405
-    Top = 31
+  object btnAddQuitarFoto: TWebButton
+    Left = 404
+    Top = 0
     Width = 96
     Height = 25
-    ChildOrder = 10
+    ChildOrder = 4
+    ElementID = 'btnAddQuitarFoto'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object btnAddGuardar: TWebButton
+    Left = 505
+    Top = 0
+    Width = 96
+    Height = 25
+    ChildOrder = 5
     ElementID = 'btnAddGuardar'
     ElementFont = efCSS
     ElementPosition = epIgnore
@@ -157,56 +103,85 @@ object Form4: TForm4
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
-  object divFotoPrev: TWebHTMLDiv
-    Left = 505
-    Top = 30
-    Width = 96
-    Height = 25
-    ElementID = 'divFotoPrev'
-    HeightStyle = ssAuto
-    WidthStyle = ssAuto
-    ChildOrder = 11
-    ElementPosition = epIgnore
-    ElementFont = efCSS
-    Role = ''
-  end
   object divHints: TWebHTMLDiv
     Left = 0
-    Top = 60
+    Top = 30
     Width = 96
     Height = 25
     ElementID = 'divHints'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
-    ChildOrder = 12
+    ChildOrder = 6
     ElementPosition = epIgnore
     ElementFont = efCSS
     Role = ''
   end
-  object lblError: TWebHTMLDiv
+  object lblAddGuardar: TWebHTMLSpan
     Left = 101
-    Top = 60
+    Top = 30
     Width = 96
     Height = 25
-    ElementID = 'lblError'
+    ElementID = 'lblAddGuardar'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
-    ChildOrder = 13
+    ChildOrder = 7
     ElementPosition = epIgnore
     ElementFont = efCSS
     Role = ''
   end
-  object edtStock: TWebSpinEdit
+  object btnAddVisible: TWebButton
     Left = 202
-    Top = 60
+    Top = 30
     Width = 96
     Height = 25
-    ElementID = 'edtStock'
+    ChildOrder = 8
+    ElementID = 'btnAddVisible'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object btnAddUniU: TWebButton
+    Left = 303
+    Top = 30
+    Width = 96
+    Height = 25
+    ChildOrder = 9
+    ElementID = 'btnAddUniU'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object edtAddNombre: TWebEdit
+    Left = 404
+    Top = 30
+    Width = 96
+    Height = 25
+    ChildOrder = 10
+    ElementID = 'edtAddNombre'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object edtAddExtra: TWebSpinEdit
+    Left = 505
+    Top = 30
+    Width = 96
+    Height = 25
+    ElementID = 'edtAddExtra'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     AutoSize = False
     BorderStyle = bsSingle
-    ChildOrder = 14
+    ChildOrder = 11
     Color = clWhite
     ElementFont = efCSS
     ElementPosition = epIgnore
@@ -216,26 +191,38 @@ object Form4: TForm4
     Role = ''
     Value = 0
   end
-  object edtNombre: TWebEdit
+  object divAddToast: TWebHTMLDiv
+    Left = 0
+    Top = 60
+    Width = 96
+    Height = 25
+    ElementID = 'divAddToast'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 12
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object lblAddError: TWebHTMLDiv
     Left = 303
     Top = 60
     Width = 96
     Height = 25
-    ChildOrder = 15
-    ElementID = 'edtNombre'
-    ElementFont = efCSS
-    ElementPosition = epIgnore
+    ElementID = 'lblAddError'
     HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
     WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
+    ChildOrder = 15
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
   end
-  object divToast: TWebHTMLDiv
+  object divPaquete: TWebHTMLDiv
     Left = 404
     Top = 60
     Width = 96
     Height = 25
-    ElementID = 'divToast'
+    ElementID = 'divPaquete'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     ChildOrder = 16
@@ -243,13 +230,13 @@ object Form4: TForm4
     ElementFont = efCSS
     Role = ''
   end
-  object btnUniPaq: TWebButton
-    Left = 506
-    Top = 59
+  object btnAddCancelar: TWebButton
+    Left = 505
+    Top = 60
     Width = 96
     Height = 25
     ChildOrder = 17
-    ElementID = 'btnUniPaq'
+    ElementID = 'btnAddCancelar'
     ElementFont = efCSS
     ElementPosition = epIgnore
     HeightStyle = ssAuto
@@ -257,13 +244,33 @@ object Form4: TForm4
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
-  object btnCambiarFoto: TWebButton
-    Left = -1
-    Top = 89
+  object edtLibras: TWebSpinEdit
+    Left = 0
+    Top = 90
     Width = 96
     Height = 25
+    ElementID = 'edtLibras'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    AutoSize = False
+    BorderStyle = bsSingle
     ChildOrder = 18
-    ElementID = 'btnCambiarFoto'
+    Color = clWhite
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    Increment = 1
+    MaxValue = 100
+    MinValue = 0
+    Role = ''
+    Value = 0
+  end
+  object btnAddUniLb: TWebButton
+    Left = 101
+    Top = 90
+    Width = 96
+    Height = 25
+    ChildOrder = 19
+    ElementID = 'btnAddUniLb'
     ElementFont = efCSS
     ElementPosition = epIgnore
     HeightStyle = ssAuto
@@ -271,40 +278,86 @@ object Form4: TForm4
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
-  object btnVisible: TWebButton
+  object edtAddStock: TWebSpinEdit
     Left = 202
     Top = 90
     Width = 96
     Height = 25
+    ElementID = 'edtAddStock'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    AutoSize = False
+    BorderStyle = bsSingle
     ChildOrder = 20
-    ElementID = 'btnVisible'
+    Color = clWhite
     ElementFont = efCSS
     ElementPosition = epIgnore
-    HeightStyle = ssAuto
-    HeightPercent = 100.000000000000000000
-    WidthStyle = ssAuto
-    WidthPercent = 100.000000000000000000
+    Increment = 1
+    MaxValue = 100
+    MinValue = 0
+    Role = ''
+    Value = 0
   end
-  object lblToast: TWebHTMLSpan
+  object edtAddPrecio: TWebSpinEdit
     Left = 303
     Top = 90
     Width = 96
     Height = 25
-    ElementID = 'lblToast'
+    ElementID = 'edtAddPrecio'
     HeightStyle = ssAuto
     WidthStyle = ssAuto
+    AutoSize = False
+    BorderStyle = bsSingle
     ChildOrder = 21
-    ElementPosition = epIgnore
+    Color = clWhite
     ElementFont = efCSS
+    ElementPosition = epIgnore
+    Increment = 1
+    MaxValue = 100
+    MinValue = 0
     Role = ''
+    Value = 0
   end
-  object btnQuitarFoto: TWebButton
+  object lblAddToast: TWebHTMLSpan
     Left = 404
     Top = 90
     Width = 96
     Height = 25
+    ElementID = 'lblAddToast'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
     ChildOrder = 22
-    ElementID = 'btnQuitarFoto'
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object edtAddInsumo: TWebSpinEdit
+    Left = 505
+    Top = 90
+    Width = 96
+    Height = 25
+    ElementID = 'edtAddCosto'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    AutoSize = False
+    BorderStyle = bsSingle
+    ChildOrder = 23
+    Color = clWhite
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    Increment = 1
+    MaxValue = 100
+    MinValue = 0
+    Role = ''
+    Value = 0
+  end
+  object btnAddUniPaq: TWebButton
+    Left = -1
+    Top = 119
+    Width = 96
+    Height = 25
+    ChildOrder = 24
+    ElementID = 'btnAddUniPaq'
     ElementFont = efCSS
     ElementPosition = epIgnore
     HeightStyle = ssAuto
@@ -312,13 +365,66 @@ object Form4: TForm4
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
-  object btnFoto: TWebButton
-    Left = 505
-    Top = 90
+  object divAgregar: TWebHTMLDiv
+    Left = 101
+    Top = 120
     Width = 96
     Height = 25
-    ChildOrder = 23
-    ElementID = 'btnFoto'
+    ElementID = 'divAgregar'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 25
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object divAddFotoPrev: TWebHTMLDiv
+    Left = 202
+    Top = 120
+    Width = 96
+    Height = 25
+    ElementID = 'divAddFotoPrev'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 26
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object lblAddRed: TWebHTMLSpan
+    Left = 303
+    Top = 120
+    Width = 96
+    Height = 25
+    ElementID = 'lblAddRed'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 27
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object edtAddNota: TWebEdit
+    Left = 403
+    Top = 121
+    Width = 96
+    Height = 25
+    ChildOrder = 28
+    ElementID = 'edtAddNota'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object btnAddFoto: TWebButton
+    Left = 505
+    Top = 120
+    Width = 96
+    Height = 25
+    ChildOrder = 29
+    ElementID = 'btnAddFoto'
     ElementFont = efCSS
     ElementPosition = epIgnore
     HeightStyle = ssAuto
@@ -328,10 +434,10 @@ object Form4: TForm4
   end
   object btnAddVolver: TWebButton
     Left = 0
-    Top = 120
+    Top = 150
     Width = 96
     Height = 25
-    ChildOrder = 24
+    ChildOrder = 30
     ElementID = 'btnAddVolver'
     ElementFont = efCSS
     ElementPosition = epIgnore
@@ -339,6 +445,5 @@ object Form4: TForm4
     HeightPercent = 100.000000000000000000
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
-    OnClick = btnAddVolverClick
   end
 end

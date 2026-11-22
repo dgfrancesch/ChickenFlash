@@ -135,6 +135,8 @@
             <FormType>dfm</FormType>
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
+        <DCCReference Include="Source\Domain\Services\uInventarioService.pas"/>
+        <DCCReference Include="Source\Infraestructure\uDom.pas"/>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>

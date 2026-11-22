@@ -154,3 +154,20 @@
   display:flex;align-items:center;gap:8px;
 }
 .agr .toast svg.i{width:16px;height:16px;color:var(--ok)}
+
+/* tres opciones de forma de venta */
+.agr .seg.c3{grid-template-columns:repeat(3,1fr)}
+
+/* tres costos en una fila */
+.agr .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+/* resumen de costo y ganancia */
+.agr .calc{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  background:var(--card2);border:1px solid var(--line);
+  border-radius:14px;padding:12px 14px;
+}
+.agr .calc small{display:block;color:var(--mut);font-size:12px}
+.agr .calc b{display:block;font-size:16px;margin-top:2px;font-variant-numeric:tabular-nums}
+.agr .calc .ok{color:var(--ok)}
+.agr .calc .neg{color:#fca5a5}

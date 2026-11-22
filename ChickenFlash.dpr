@@ -3,7 +3,6 @@ program ChickenFlash;
 {$R *.dres}
 
 uses
-  Vcl.Forms,
   Web,
   WEBLib.Forms,
   uAuthService in 'Source\Domain\Services\uAuthService.pas',
@@ -16,7 +15,9 @@ uses
   fInventory in 'Source\Presentation\fInventory.pas' {Form3: TWebForm} {*.html},
   uShell in 'Source\Presentation\uShell.pas',
   uNavegacion in 'Source\Presentation\uNavegacion.pas',
-  fAddProduct in 'Source\Presentation\fAddProduct.pas' {Form4: TWebForm} {*.html};
+  fAddProduct in 'Source\Presentation\fAddProduct.pas' {Form4: TWebForm} {*.html},
+  uInventarioService in 'Source\Domain\Services\uInventarioService.pas',
+  uDom in 'Source\Infraestructure\uDom.pas';
 
 {$R *.res}
 
@@ -26,7 +27,7 @@ begin
   if TAuthService.HaySesion then
   begin
     TNavegacion.Iniciar;
-    TNavegacion.IrARuta(TNavegacion.RutaActual, True);   // normaliza la URL (#/vender si venía vacía)
+    TNavegacion.IrARuta(TNavegacion.RutaActual, True); // normaliza la URL
     if TNavegacion.RutaActual = 'inventario' then
       Application.CreateForm(TForm3, Form3)
     else if TNavegacion.RutaActual = 'agregar' then
