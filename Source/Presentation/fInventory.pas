@@ -108,6 +108,15 @@ begin
     Result := 'Por libra';
 end;
 
+function IconoDe(P: TProducto): string;
+begin
+  if P.FotoUrl <> '' then
+    Result := '<img class="thumb" src="' + Esc(P.FotoUrl) + '" alt="" loading="lazy" ' +
+      'onerror="this.outerHTML=&quot;<svg class=i><use href=#i-box></use></svg>&quot;">'
+  else
+    Result := '<svg class="i"><use href="#i-box"></use></svg>';
+end;
+
 function TarjetaProducto(P: TProducto; const Seccion: string): string;
 var
   ClaseItem, ClaseStock, Insignias: string;
@@ -131,7 +140,7 @@ begin
   Result :=
     '<div class="' + ClaseItem + '" data-id="' + IntToStr(P.Id) + '">' +
       '<div class="item-top">' +
-        '<div class="ico"><svg class="i"><use href="#i-box"></use></svg></div>' +
+                '<div class="ico">' + IconoDe(P) + '</div>' +
         '<div class="info">' +
           '<div class="title-row"><b>' + Esc(P.Nombre) + '</b>' + Insignias + '</div>' +
           '<div class="meta">' + Esc(DetalleDe(P)) + '</div>' +

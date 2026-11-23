@@ -10,7 +10,7 @@ type
   public
     Id: Integer;
     Nombre: string;
-        Orden: Integer;
+    Orden: Integer;
     Activa: Boolean;
     Productos: Integer;
   end;
@@ -33,9 +33,10 @@ type
     Stock: Double;
     Nota: string;
     Visible: Boolean;
-        Costo: Double;
+    Costo: Double;
     CostoExtra: Double;
     Insumo: Double;
+    FotoUrl: string;            // '' = sin foto
   end;
 
   TResultadoProductos = class
@@ -51,6 +52,13 @@ type
     Error: string;
   end;
 
+  TResultadoFoto = class
+  public
+    Ok: Boolean;
+    Error: string;
+    Url: string;                // dirección pública de la foto subida
+  end;
+
   TProductoNuevo = record
     SeccionId: Integer;
     Nombre: string;
@@ -63,6 +71,8 @@ type
     Precio: Double;             // CUP
     Stock: Double;
     Visible: Boolean;
+    FotoUrl: string;            // foto nueva ya subida ('' = no cambia)
+    QuitarFoto: Boolean;        // al editar: dejar el producto sin foto
   end;
 
   TInventarioService = class
@@ -87,12 +97,16 @@ type
     class function EliminarSeccion(Id: Integer): TResultado;
     [async]
     class function ContarProductos(SeccionId: Integer): Integer;
+    [async]
+    class function SubirFoto(Archivo: TJSObject): TResultadoFoto;
+    [async]
+    class function BorrarFoto(const Url: string): TResultado;
   end;
 
 implementation
 
 uses
-  uSession;
+  uSession, uConfig;
 
 const
   // Valores que acepta productos.tipo_venta en la BD
@@ -142,6 +156,86 @@ begin
   console.log('Error BD ' + IntToStr(R.Status) + ': ' + R.Body);   // detalle técnico
 end;
 
+{ ---------- fotos (Supabase Storage, bucket "productos") ---------- }
+
+function NuevaRuta: string;
+begin
+  asm
+    Result = 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8) + '.jpg';
+  end;
+end;
+
+// Nunca falla: devuelve {status, body}. Sin red o tiempo agotado => status 0.
+function SubirFetch(Archivo: TJSObject; const Base, Ruta, ApiKey, Token: string): TJSPromise;
+begin
+  asm
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, 120000);
+    Result = fetch(Base + '/storage/v1/object/productos/' + Ruta, {
+      method: 'POST',
+      headers: { 'apikey': ApiKey, 'Authorization': 'Bearer ' + Token, 'Content-Type': 'image/jpeg' },
+      body: Archivo,
+      signal: ctrl.signal
+    }).then(function (r) {
+      return r.text().then(function (t) { clearTimeout(timer); return { status: r.status, body: t }; });
+    }).catch(function () { clearTimeout(timer); return { status: 0, body: '' }; });
+  end;
+end;
+
+function BorrarFetch(const Base, Ruta, ApiKey, Token: string): TJSPromise;
+begin
+  asm
+    Result = fetch(Base + '/storage/v1/object/productos/' + Ruta, {
+      method: 'DELETE',
+      headers: { 'apikey': ApiKey, 'Authorization': 'Bearer ' + Token }
+    }).then(function (r) { return { status: r.status, body: '' }; })
+      .catch(function () { return { status: 0, body: '' }; });
+  end;
+end;
+
+class function TInventarioService.SubirFoto(Archivo: TJSObject): TResultadoFoto;
+var
+  Ruta: string;
+  Res: TJSObject;
+  Estado: Integer;
+begin
+  Result := TResultadoFoto.Create;
+  Ruta := NuevaRuta;
+  Res := await(TJSObject, SubirFetch(Archivo, SB_URL, Ruta, SB_KEY, Token));
+  Estado := Integer(Res['status']);
+  if (Estado >= 200) and (Estado < 300) then
+  begin
+    Result.Url := SB_URL + '/storage/v1/object/public/productos/' + Ruta;
+    Result.Ok := True;
+    Exit;
+  end;
+  console.log('Error subiendo foto ' + IntToStr(Estado) + ': ' + string(Res['body']));
+  if Estado = 0 then
+    Result.Error := 'Sin conexión. No se pudo subir la foto.'
+  else if (Estado = 400) or (Estado = 401) or (Estado = 403) then
+    Result.Error := 'Sin permiso para subir fotos (revisa las políticas de Storage).'
+  else
+    Result.Error := 'No se pudo subir la foto (' + IntToStr(Estado) + ').';
+end;
+
+// Borra del almacenamiento una foto que subimos nosotros; si falla, no pasa nada
+class function TInventarioService.BorrarFoto(const Url: string): TResultado;
+var
+  Marca, Ruta: string;
+  P: Integer;
+  Res: TJSObject;
+begin
+  Result := TResultado.Create;
+  Marca := '/storage/v1/object/public/productos/';
+  P := Pos(Marca, Url);
+  if P = 0 then Exit;
+  Ruta := Copy(Url, P + Length(Marca), 200);
+  Res := await(TJSObject, BorrarFetch(SB_URL, Ruta, SB_KEY, Token));
+  Result.Ok := (Integer(Res['status']) >= 200) and (Integer(Res['status']) < 300);
+end;
+
+{ ---------- secciones ---------- }
+
 class function TInventarioService.CargarSecciones: TResultadoSecciones;
 var
   R: TApiResponse;
@@ -171,126 +265,6 @@ begin
     Result.Items[i] := S;
   end;
   Result.Ok := True;
-end;
-
-class function TInventarioService.CargarProductos: TResultadoProductos;
-var
-  R: TApiResponse;
-  Arr: TJSArray;
-  Obj: TJSObject;
-  P: TProducto;
-  i: Integer;
-begin
-  Result := TResultadoProductos.Create;
-  R := await(TApiResponse, THttp.Send('GET',
-        '/rest/v1/productos?select=id,seccion_id,nombre,tipo_venta,libras_por_paquete,'
-    + 'precio_cup,costo_cup,costo_extra_cup,insumo_cup,stock,nota,visible'
-    + '&activo=eq.true&order=orden.asc,nombre.asc',
-    '', Token));
-  if not R.Ok then
-  begin
-    Result.Error := MensajeError(R);
-    Exit;
-  end;
-
-  Arr := TJSArray(TJSJSON.parse(R.Body));
-  SetLength(Result.Items, Arr.length);
-  for i := 0 to Arr.length - 1 do
-  begin
-    Obj := TJSObject(Arr[i]);
-    P := TProducto.Create;
-    P.Id := Integer(Obj['id']);
-    P.SeccionId := Integer(Obj['seccion_id']);
-    P.Nombre := TextoJS(Obj['nombre']);
-    P.TipoVenta := TextoJS(Obj['tipo_venta']);
-    P.LibrasPorPaquete := NumeroJS(Obj['libras_por_paquete']);
-    P.Precio := NumeroJS(Obj['precio_cup']);
-        P.Costo := NumeroJS(Obj['costo_cup']);
-    P.CostoExtra := NumeroJS(Obj['costo_extra_cup']);
-    P.Insumo := NumeroJS(Obj['insumo_cup']);
-    P.Stock := NumeroJS(Obj['stock']);
-    P.Nota := TextoJS(Obj['nota']);
-    P.Visible := Boolean(Obj['visible']);
-    Result.Items[i] := P;
-  end;
-  Result.Ok := True;
-end;
-
-function ArmarJson(P: TProductoNuevo; Editando: Boolean): string;
-var
-  O: TJSObject;
-begin
-  O := TJSObject.new;
-  O['seccion_id'] := P.SeccionId;
-  O['nombre'] := Trim(P.Nombre);
-  O['costo_cup'] := Redondear(P.Costo, 2);
-  O['costo_extra_cup'] := Redondear(P.CostoExtra, 2);
-  O['insumo_cup'] := Redondear(P.Insumo, 2);
-  O['precio_cup'] := Redondear(P.Precio, 2);
-  O['visible'] := P.Visible;
-  if Trim(P.Nota) <> '' then
-    O['nota'] := Trim(P.Nota)
-  else if Editando then
-    O['nota'] := null;                          // permite borrar la nota
-
-  if P.TipoVenta = 'paq' then
-  begin
-    O['tipo_venta'] := TV_PAQUETE;
-    O['libras_por_paquete'] := Redondear(P.LibrasPorPaquete, 3);
-    O['stock'] := Round(P.Stock);
-  end
-  else if P.TipoVenta = 'u' then
-  begin
-    O['tipo_venta'] := TV_UNIDAD;
-    O['stock'] := Round(P.Stock);
-    if Editando then O['libras_por_paquete'] := null;
-  end
-  else
-  begin
-    O['tipo_venta'] := TV_LIBRA;
-    O['stock'] := Redondear(P.Stock, 3);
-    if Editando then O['libras_por_paquete'] := null;
-  end;
-  Result := TJSJSON.stringify(O);
-end;
-
-class function TInventarioService.CrearProducto(P: TProductoNuevo): TResultado;
-var
-  R: TApiResponse;
-begin
-  Result := TResultado.Create;
-  R := await(TApiResponse, THttp.Send('POST', '/rest/v1/productos',
-    ArmarJson(P, False), Token));
-  Result.Ok := R.Ok;
-  if not R.Ok then
-    Result.Error := MensajeError(R);
-end;
-
-class function TInventarioService.ActualizarProducto(Id: Integer; P: TProductoNuevo): TResultado;
-var
-  R: TApiResponse;
-begin
-  Result := TResultado.Create;
-  R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
-    ArmarJson(P, True), Token));
-  Result.Ok := R.Ok;
-  if not R.Ok then
-    Result.Error := MensajeError(R);
-end;
-
-class function TInventarioService.ActualizarStock(Id: Integer; Stock: Double): TResultado;
-var
-  O: TJSObject;
-  R: TApiResponse;
-begin
-  Result := TResultado.Create;
-  O := TJSObject.new;
-  O['stock'] := Stock;
-  R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
-    TJSJSON.stringify(O), Token));
-  Result.Ok := R.Ok;
-  if not R.Ok then
-    Result.Error := MensajeError(R);
 end;
 
 class function TInventarioService.CargarSeccionesTodas: TResultadoSecciones;
@@ -406,6 +380,133 @@ begin
     Exit;
   end;
   Result := TJSArray(TJSJSON.parse(R.Body)).length;
+end;
+
+{ ---------- productos ---------- }
+
+class function TInventarioService.CargarProductos: TResultadoProductos;
+var
+  R: TApiResponse;
+  Arr: TJSArray;
+  Obj: TJSObject;
+  P: TProducto;
+  i: Integer;
+begin
+  Result := TResultadoProductos.Create;
+  R := await(TApiResponse, THttp.Send('GET',
+    '/rest/v1/productos?select=id,seccion_id,nombre,tipo_venta,libras_por_paquete,'
+    + 'precio_cup,costo_cup,costo_extra_cup,insumo_cup,stock,nota,visible,foto_url'
+    + '&activo=eq.true&order=orden.asc,nombre.asc',
+    '', Token));
+  if not R.Ok then
+  begin
+    Result.Error := MensajeError(R);
+    Exit;
+  end;
+
+  Arr := TJSArray(TJSJSON.parse(R.Body));
+  SetLength(Result.Items, Arr.length);
+  for i := 0 to Arr.length - 1 do
+  begin
+    Obj := TJSObject(Arr[i]);
+    P := TProducto.Create;
+    P.Id := Integer(Obj['id']);
+    P.SeccionId := Integer(Obj['seccion_id']);
+    P.Nombre := TextoJS(Obj['nombre']);
+    P.TipoVenta := TextoJS(Obj['tipo_venta']);
+    P.LibrasPorPaquete := NumeroJS(Obj['libras_por_paquete']);
+    P.Precio := NumeroJS(Obj['precio_cup']);
+    P.Costo := NumeroJS(Obj['costo_cup']);
+    P.CostoExtra := NumeroJS(Obj['costo_extra_cup']);
+    P.Insumo := NumeroJS(Obj['insumo_cup']);
+    P.Stock := NumeroJS(Obj['stock']);
+    P.Nota := TextoJS(Obj['nota']);
+    P.Visible := Boolean(Obj['visible']);
+    P.FotoUrl := TextoJS(Obj['foto_url']);
+    Result.Items[i] := P;
+  end;
+  Result.Ok := True;
+end;
+
+function ArmarJson(P: TProductoNuevo; Editando: Boolean): string;
+var
+  O: TJSObject;
+begin
+  O := TJSObject.new;
+  O['seccion_id'] := P.SeccionId;
+  O['nombre'] := Trim(P.Nombre);
+  O['costo_cup'] := Redondear(P.Costo, 2);
+  O['costo_extra_cup'] := Redondear(P.CostoExtra, 2);
+  O['insumo_cup'] := Redondear(P.Insumo, 2);
+  O['precio_cup'] := Redondear(P.Precio, 2);
+  O['visible'] := P.Visible;
+  if P.FotoUrl <> '' then
+    O['foto_url'] := P.FotoUrl
+  else if Editando and P.QuitarFoto then
+    O['foto_url'] := null;                      // dejar el producto sin foto
+  if Trim(P.Nota) <> '' then
+    O['nota'] := Trim(P.Nota)
+  else if Editando then
+    O['nota'] := null;                          // permite borrar la nota
+
+  if P.TipoVenta = 'paq' then
+  begin
+    O['tipo_venta'] := TV_PAQUETE;
+    O['libras_por_paquete'] := Redondear(P.LibrasPorPaquete, 3);
+    O['stock'] := Round(P.Stock);
+  end
+  else if P.TipoVenta = 'u' then
+  begin
+    O['tipo_venta'] := TV_UNIDAD;
+    O['stock'] := Round(P.Stock);
+    if Editando then O['libras_por_paquete'] := null;
+  end
+  else
+  begin
+    O['tipo_venta'] := TV_LIBRA;
+    O['stock'] := Redondear(P.Stock, 3);
+    if Editando then O['libras_por_paquete'] := null;
+  end;
+  Result := TJSJSON.stringify(O);
+end;
+
+class function TInventarioService.CrearProducto(P: TProductoNuevo): TResultado;
+var
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  R := await(TApiResponse, THttp.Send('POST', '/rest/v1/productos',
+    ArmarJson(P, False), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
+end;
+
+class function TInventarioService.ActualizarProducto(Id: Integer; P: TProductoNuevo): TResultado;
+var
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
+    ArmarJson(P, True), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
+end;
+
+class function TInventarioService.ActualizarStock(Id: Integer; Stock: Double): TResultado;
+var
+  O: TJSObject;
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  O := TJSObject.new;
+  O['stock'] := Stock;
+  R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
+    TJSJSON.stringify(O), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
 end;
 
 end.

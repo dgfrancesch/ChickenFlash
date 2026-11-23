@@ -49,12 +49,18 @@ type
     procedure btnAddUniUClick(Sender: TObject);
     procedure btnVisibleClick(Sender: TObject);
     procedure btnGuardarClick(Sender: TObject);
+    procedure btnAddFotoClick(Sender: TObject);
+    procedure btnAddQuitarFotoClick(Sender: TObject);
   private
     FGuardando: Boolean;
     FSeccionId: Integer;
     FUnidad: string;      // 'lb', 'paq' o 'u'
     FVisible: Boolean;
-      FEditId: Integer;
+    FEditId: Integer;
+    FFotoBlob: TJSObject;   // foto nueva elegida (ya reducida), pendiente de subir
+    FFotoNueva: string;     // URL de esa foto una vez subida (por si falla el guardado y se reintenta)
+    FFotoUrl: string;       // foto que ya tenía el producto (al editar)
+    FQuitarFoto: Boolean;   // se quitó la foto que tenía
     [async]
     procedure CargarParaEditar;
     procedure PonerVisible(Si: Boolean);
@@ -62,6 +68,10 @@ type
     procedure CargarSecciones;
     [async]
     procedure Guardar;
+    [async]
+    procedure PonerFoto(Archivo: JSValue);
+    procedure MostrarVistaPrevia(Si: Boolean);
+    procedure PonerVistaUrl(const Url: string);
     procedure MarcarSeccion(Id: Integer);
     procedure PonerUnidad(const Tipo: string);
     procedure PonerLibras(const Valor: string);
@@ -84,21 +94,6 @@ uses
 
 { ---------- utilidades ---------- }
 
-function Ancestro(El: TJSElement; const Selector: string): TJSElement;
-begin
-  asm
-    Result = El.closest(Selector);
-  end;
-end;
-
-function Esc(const S: string): string;
-begin
-  Result := StringReplace(S, '&', '&amp;', [rfReplaceAll]);
-  Result := StringReplace(Result, '<', '&lt;', [rfReplaceAll]);
-  Result := StringReplace(Result, '>', '&gt;', [rfReplaceAll]);
-  Result := StringReplace(Result, '"', '&quot;', [rfReplaceAll]);
-end;
-
 function Num(El: TJSElement): Double;
 begin
   Result := StrToFloatDef(string(TJSHTMLInputElement(El).value), 0);
@@ -117,20 +112,27 @@ begin
   Result := FloatToStr(Round(V * 100) / 100) + ' CUP';
 end;
 
-procedure Mostrar(El: TJSElement; Visible: Boolean);
+// Reduce la foto del teléfono a un JPEG de máx. 'Lado' px (una foto de 4 MB queda en ~100 KB)
+function ReducirFoto(Archivo: JSValue; Lado: Integer; Calidad: Double): TJSPromise;
 begin
-  if Visible then
-    El.removeAttribute('hidden')
-  else
-    El.setAttribute('hidden', '');
-end;
-
-procedure PonerClase(El: TJSElement; const Clase: string; Si: Boolean);
-begin
-  if Si then
-    El.classList.add(Clase)
-  else
-    El.classList.remove(Clase);
+  asm
+    Result = new Promise(function (resolve) {
+      var url = URL.createObjectURL(Archivo);
+      var img = new Image();
+      img.onload = function () {
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var k = Math.min(1, Lado / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * k);
+        c.height = Math.round(h * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (b) { resolve(b); }, 'image/jpeg', Calidad);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    });
+  end;
 end;
 
 // Un solo clic para las secciones y las sugerencias (se crean por código)
@@ -163,6 +165,21 @@ begin
     TForm4(TShell.Actual).Recalcular;
 end;
 
+// Se eligió una foto (cámara o galería) en el input oculto
+function AlElegirFoto(Event: TJSEvent): Boolean;
+var
+  Archivo: JSValue;
+begin
+  Result := True;
+  if not (TShell.Actual is TForm4) then Exit;
+  asm
+    Archivo = (Event.target.files && Event.target.files[0]) ? Event.target.files[0] : null;
+    Event.target.value = '';      // así se puede elegir la misma foto otra vez
+  end;
+  if isNull(Archivo) or isUndefined(Archivo) then Exit;
+  TForm4(TShell.Actual).PonerFoto(Archivo);
+end;
+
 { ---------- pantalla ---------- }
 
 procedure TForm4.WebFormCreate(Sender: TObject);
@@ -171,7 +188,7 @@ begin
   TShell.Actual := Self;
   FVisible := True;
 
-    FEditId := TShell.EditarId;
+  FEditId := TShell.EditarId;
   TShell.EditarId := 0;
   if FEditId > 0 then
   begin
@@ -186,11 +203,15 @@ begin
   btnAddVisible.OnClick := btnVisibleClick;
   btnAddCancelar.OnClick := btnAddCancelarClick;
   btnAddVolver.OnClick := btnAddVolverClick;
+  btnAddFoto.OnClick := btnAddFotoClick;
+  btnAddCambiarFoto.OnClick := btnAddFotoClick;
+  btnAddQuitarFoto.OnClick := btnAddQuitarFotoClick;
 
   PonerUnidad('lb');
   Recalcular;
   divAgregar.ElementHandle.addEventListener('click', @AlClicAgregar);
   divAgregar.ElementHandle.addEventListener('input', @AlEscribirAgregar);
+  document.getElementById('edtAddFoto').addEventListener('change', @AlElegirFoto);
   CargarSecciones;
 end;
 
@@ -218,7 +239,7 @@ begin
       + Esc(R.Items[i].Nombre) + '</button>';
   divAddSeccion.ElementHandle.innerHTML := Html;
   MarcarSeccion(R.Items[0].Id);
-    if FEditId > 0 then
+  if FEditId > 0 then
     CargarParaEditar;
 end;
 
@@ -270,6 +291,10 @@ begin
   PonerNum(edtAddPrecio.ElementHandle, P.Precio);
   PonerNum(edtAddStock.ElementHandle, P.Stock);
   PonerVisible(P.Visible);
+
+  FFotoUrl := P.FotoUrl;
+  if P.FotoUrl <> '' then
+    PonerVistaUrl(P.FotoUrl);
   Recalcular;
 end;
 
@@ -321,6 +346,65 @@ begin
   PonerClase(ElNeto, 'neg', Neto < 0);
 end;
 
+{ ---------- foto ---------- }
+
+// Con vista previa se oculta el cuadro de "Agregar foto", y al revés
+procedure TForm4.MostrarVistaPrevia(Si: Boolean);
+begin
+  Mostrar(divAddFotoPrev.ElementHandle, Si);
+  Mostrar(btnAddFoto.ElementHandle, not Si);
+end;
+
+procedure TForm4.PonerVistaUrl(const Url: string);
+begin
+  asm
+    document.getElementById('imgAddFoto').src = Url;
+  end;
+  MostrarVistaPrevia(True);
+end;
+
+procedure TForm4.btnAddFotoClick(Sender: TObject);
+begin
+  asm
+    document.getElementById('edtAddFoto').click();
+  end;
+end;
+
+procedure TForm4.PonerFoto(Archivo: JSValue);
+var
+  Foto: TJSObject;
+begin
+  Foto := await(TJSObject, ReducirFoto(Archivo, 800, 0.8));
+  if Foto = nil then
+  begin
+    MostrarError('No se pudo leer la foto. Prueba con otra.');
+    Exit;
+  end;
+  OcultarError;
+  FFotoBlob := Foto;
+  FFotoNueva := '';
+  FQuitarFoto := False;
+  asm
+    var img = document.getElementById('imgAddFoto');
+    if (window.__fotoPrev) URL.revokeObjectURL(window.__fotoPrev);
+    window.__fotoPrev = URL.createObjectURL(Foto);
+    img.src = window.__fotoPrev;
+  end;
+  MostrarVistaPrevia(True);
+end;
+
+procedure TForm4.btnAddQuitarFotoClick(Sender: TObject);
+begin
+  FFotoBlob := nil;
+  FFotoNueva := '';
+  if FFotoUrl <> '' then
+    FQuitarFoto := True;            // al guardar, el producto queda sin foto
+  asm
+    document.getElementById('imgAddFoto').removeAttribute('src');
+  end;
+  MostrarVistaPrevia(False);
+end;
+
 { ---------- eventos ---------- }
 
 procedure TForm4.btnUniLbClick(Sender: TObject);
@@ -363,6 +447,7 @@ procedure TForm4.Guardar;
 var
   P: TProductoNuevo;
   R: TResultado;
+  RF: TResultadoFoto;
 begin
   if FGuardando then Exit;
   OcultarError;
@@ -378,6 +463,8 @@ begin
   P.Precio := Num(edtAddPrecio.ElementHandle);
   P.Stock := Num(edtAddStock.ElementHandle);
   P.Visible := FVisible;
+  P.FotoUrl := '';
+  P.QuitarFoto := FQuitarFoto;
 
   if P.SeccionId = 0 then
   begin
@@ -410,8 +497,25 @@ begin
     Exit;
   end;
 
-   FGuardando := True;
+  FGuardando := True;
   Ocupado(True);
+
+  // 1) la foto nueva se sube primero (si ya se subió en un intento anterior, no se repite)
+  if (FFotoBlob <> nil) and (FFotoNueva = '') then
+  begin
+    RF := await(TResultadoFoto, TInventarioService.SubirFoto(FFotoBlob));
+    if not RF.Ok then
+    begin
+      Ocupado(False);
+      FGuardando := False;
+      MostrarError(RF.Error + ' Puedes quitar la foto y guardar el producto sin ella.');
+      Exit;
+    end;
+    FFotoNueva := RF.Url;
+  end;
+  P.FotoUrl := FFotoNueva;
+
+  // 2) el producto
   if FEditId > 0 then
     R := await(TResultado, TInventarioService.ActualizarProducto(FEditId, P))
   else
@@ -421,6 +525,9 @@ begin
 
   if R.Ok then
   begin
+    // la foto vieja ya no sirve si se cambió o se quitó
+    if (FFotoUrl <> '') and ((P.FotoUrl <> '') or FQuitarFoto) then
+      TInventarioService.BorrarFoto(FFotoUrl);
     if FEditId > 0 then
       TShell.Aviso := 'Producto actualizado'
     else
