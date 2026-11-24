@@ -44,6 +44,7 @@ type
     procedure Repintar;
     procedure Accionar(Id: Integer; const Accion: string);
     procedure FijarCantidad(Id: Integer; Valor: Double);
+    procedure RestaurarVenta;
   public
   end;
 
@@ -53,7 +54,7 @@ var
 implementation
 
 uses
-  uShell, uSession, uDom, uVentasService;
+  uShell, uSession, uDom, uVentasService, uNavegacion;
 
 {$R *.dfm}
 
@@ -241,6 +242,9 @@ begin
   dashboard.ElementHandle.addEventListener('input', @AlEscribirDash);
   dashboard.ElementHandle.addEventListener('focusin', @AlEnfocarDash);
   dashboard.ElementHandle.addEventListener('keydown', @AlTeclaDash);
+  // Si se recargo en otra ruta (ej. #/cobrar), esta pantalla es Vender: se corrige la URL
+  if TNavegacion.RutaActual <> 'vender' then
+    TNavegacion.IrARuta('vender', True);
   Cargar;
 end;
 
@@ -277,9 +281,39 @@ begin
   for i := 0 to High(FQ) do
     FQ[i] := 0;
   FSeccionId := 0;
+  RestaurarVenta;                              // si vuelves desde Cobrar, la venta sigue armada
   PintarFiltros;
   Repintar;
   CargarVentasHoy;
+end;
+
+// Recupera la venta guardada en sessionStorage ('venta') al volver de la pantalla de cobro
+procedure TForm2.RestaurarVenta;
+var
+  Txt: string;
+  Venta, Item: TJSObject;
+  Items: TJSArray;
+  j, k: Integer;
+  V: Double;
+begin
+  asm
+    Txt = sessionStorage.getItem('venta') || '';
+  end;
+  if Txt = '' then Exit;
+  try
+    Venta := TJSObject(TJSJSON.parse(Txt));
+    Items := TJSArray(Venta['items']);
+    for j := 0 to Items.length - 1 do
+    begin
+      Item := TJSObject(Items[j]);
+      k := IndiceDe(Integer(Item['id']));
+      if k < 0 then Continue;
+      V := Double(Item['cantidad']);
+      if V > FProductos[k].Stock then V := FProductos[k].Stock;
+      if V > 0 then FQ[k] := V;
+    end;
+  except
+  end;
 end;
 
 procedure TForm2.CargarVentasHoy;
@@ -595,7 +629,7 @@ begin
   Repintar;
 end;
 
-// Guarda la venta armada; la pantalla de cobro la leerá de sessionStorage ('venta')
+// Guarda la venta armada en sessionStorage ('venta') y va a la pantalla #/cobrar
 procedure TForm2.btnCobrarClick(Sender: TObject);
 var
   Items: TJSArray;
@@ -623,7 +657,7 @@ begin
   Venta['items'] := Items;
   Venta['total'] := Total;
   window.sessionStorage.setItem('venta', TJSJSON.stringify(Venta));
- // lblVentaAviso.ElementHandle.textContent := 'La pantalla de cobro todavía no está lista.';
+  TNavegacion.IrARuta('cobrar');
 end;
 
 end.

@@ -143,6 +143,12 @@
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
         <DCCReference Include="Source\Domain\Services\uVentasService.pas"/>
+        <DCCReference Include="Source\Presentation\fCobrar.pas">
+            <Form>Form6</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Source\Infraestructure\uTasas.pas"/>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -237,6 +243,7 @@
         <None Include="Css\Inventario.css"/>
         <None Include="Css\addProduct.css"/>
         <None Include="Css\secciones.css"/>
+        <None Include="Css\cobrar.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -464,6 +471,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Css\addProduct.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\cobrar.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

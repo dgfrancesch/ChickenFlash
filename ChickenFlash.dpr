@@ -19,7 +19,9 @@ uses
   uInventarioService in 'Source\Domain\Services\uInventarioService.pas',
   uDom in 'Source\Infraestructure\uDom.pas',
   fSecciones in 'Source\Presentation\fSecciones.pas' {Form5: TWebForm} {*.html},
-  uVentasService in 'Source\Domain\Services\uVentasService.pas';
+  uVentasService in 'Source\Domain\Services\uVentasService.pas',
+  fCobrar in 'Source\Presentation\fCobrar.pas' {Form6: TWebForm} {*.html},
+  uTasas in 'Source\Infraestructure\uTasas.pas';
 
 {$R *.res}
 
