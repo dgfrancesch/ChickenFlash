@@ -63,3 +63,8 @@
 .cb-done b{color:#f1f5fb}
 .cb-hide{display:none!important}
 .cb-cta[disabled]{opacity:.6;cursor:default}
+.cb input[type=checkbox]{width:24px;height:24px;padding:0;flex:none;accent-color:var(--cb-gold);cursor:pointer}
+.cb-keep{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px 14px;background:var(--cb-card);border:1px solid var(--cb-line);border-radius:20px;cursor:pointer;font-weight:600}
+.cb-keep span{flex:1}
+.cb-keep b{color:var(--cb-gold)}
+.cb-keep small{display:block;margin-top:2px;color:var(--cb-mut);font-weight:400}

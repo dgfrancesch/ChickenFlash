@@ -105,7 +105,7 @@ begin
       var g = function (id) { return root.querySelector('[id="' + id + '"]'); };
       var TOTAL = 0, VENTA = null;
       var R = { USD: 400, EUR: 430, MLC: 280 };
-      var fxC = 'USD', chC = 'CUP', man = null;
+      var fxC = 'USD', chC = 'CUP', man = null, dejar = false;
 
       var n = function (id) {
         var v = parseFloat(String(g(id).value).replace(',', '.'));
@@ -114,6 +114,10 @@ begin
       var f = function (x, d) {
         d = d || 0;
         return x.toLocaleString('es', { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/\u00a0|\u202f/g, ' ');
+      };
+      // Monto en CUP tal cual (hasta 2 decimales, sin redondear a entero): 116.4 se ve 116,4
+      var fa = function (x) {
+        return x.toLocaleString('es', { minimumFractionDigits: 0, maximumFractionDigits: 2 }).replace(/\u00a0|\u202f/g, ' ');
       };
       var fl = function (x, d) { return Math.floor(x * Math.pow(10, d) + 1e-9) / Math.pow(10, d); };
       var r2 = function (x) { return Math.round(x * 100) / 100; };
@@ -132,59 +136,72 @@ begin
 
       var calc = function () {
         var cash = n('cbCash'), fx = n('cbFx'), trf = n('cbTrf'), mlc = n('cbMlc');
-        var fxCup = fx * R[fxC], mlcCup = mlc * R.MLC;
+        var fxCup = Math.round(fx * R[fxC] * 100) / 100, mlcCup = Math.round(mlc * R.MLC * 100) / 100;
         var sc = cash + fxCup, st = trf + mlcCup, paid = sc + st;
-        return { cash: cash, fx: fx, trf: trf, mlc: mlc, fxCup: fxCup, mlcCup: mlcCup, sc: sc, st: st, paid: paid, diff: paid - TOTAL };
+        return { cash: cash, fx: fx, trf: trf, mlc: mlc, fxCup: fxCup, mlcCup: mlcCup, sc: sc, st: st, paid: paid, diff: Math.round((paid - TOTAL) * 100) / 100 };
       };
       var totalText = function (diff) {
-        if (chC === 'CUP' || !calc().fx) { return f(diff) + ' CUP'; }
+        if (chC === 'CUP' || !calc().fx) { return fa(diff) + ' CUP'; }
         return f(fl(diff / R[chC], 2), 2) + ' ' + chC;
       };
+      // Reparto del vuelto en divisa + CUP.
+      // Automatico: divisa en unidades enteras y el resto en CUP exacto (116.4).
+      // Si escribes la divisa: el CUP se recalcula. Si escribes el CUP: la divisa NO cambia
+      // y puedes dar menos (la diferencia es lo que no se entrega).
       var getSplit = function (diff) {
-        var r = R[chC], fx, cup;
-        if (man && man.field === 'fx') { fx = Math.min(man.v, diff / r); cup = diff - fx * r; }
-        else if (man) { cup = Math.min(man.v, diff); fx = (diff - cup) / r; }
+        var r = R[chC], fx, cup, tope = fl(diff / r, 2);
+        if (man && man.field === 'fx') { fx = r2(Math.min(man.v, tope)); cup = diff - fx * r; }
+        else if (man) { fx = r2(Math.min(man.fx, tope)); cup = Math.min(man.v, diff - fx * r); }
         else { fx = Math.floor(diff / r + 1e-9); cup = diff - fx * r; }
-        return { fx: Math.round(fx * 100) / 100, cup: Math.max(0, Math.round(cup)) };
+        return { fx: fx, cup: Math.max(0, r2(cup)) };
       };
       var changeText = function (diff) {
-        if (chC === 'CUP' || !calc().fx) { return f(diff) + ' CUP'; }
+        if (chC === 'CUP' || !calc().fx) { return fa(diff) + ' CUP'; }
         var sp = getSplit(diff), P = [];
         if (sp.fx > 0) { P.push(f(sp.fx, sp.fx % 1 ? 2 : 0) + ' ' + chC); }
-        if (sp.cup > 0) { P.push(f(sp.cup) + ' CUP'); }
+        if (sp.cup > 0) { P.push(fa(sp.cup) + ' CUP'); }
         return P.length ? P.join(' + ') : '0 CUP';
       };
       var fillSplit = function (which) {
         var d = calc().diff, sp = getSplit(d);
         if (which !== 'fx') { g('cbChFx').value = sp.fx ? String(sp.fx) : ''; }
         if (which !== 'cup') { g('cbChCup').value = sp.cup ? String(sp.cup) : ''; }
-        var over = man && ((man.field === 'fx' && man.v * R[chC] > d + 0.01) || (man.field === 'cup' && man.v > d + 0.01));
+        var over = false, r = R[chC];
+        if (man && man.field === 'fx') { over = man.v * r > d + 0.01; }
+        else if (man) { over = man.v > d - sp.fx * r + 0.01; }
         g('cbChgAmt').textContent = over
           ? 'No puedes devolver m\u00e1s del vuelto total (' + totalText(d) + ')'
-          : 'Vuelto total: ' + totalText(d) + ' = ' + f(d) + ' CUP';
+          : 'Vuelto total: ' + totalText(d) + ' = ' + fa(d) + ' CUP';
       };
 
       var upd = function () {
         man = null;
         var c = calc();
         g('cbFxEq').textContent = c.fx
-          ? f(c.fx, 2) + ' ' + fxC + ' \u00d7 ' + R[fxC] + ' = ' + f(c.fxCup) + ' CUP'
+          ? f(c.fx, 2) + ' ' + fxC + ' \u00d7 ' + R[fxC] + ' = ' + fa(c.fxCup) + ' CUP'
           : '1 ' + fxC + ' = ' + R[fxC] + ' CUP';
         g('cbMlcEq').textContent = c.mlc
-          ? f(c.mlc, 2) + ' MLC \u00d7 ' + R.MLC + ' = ' + f(c.mlcCup) + ' CUP'
+          ? f(c.mlc, 2) + ' MLC \u00d7 ' + R.MLC + ' = ' + fa(c.mlcCup) + ' CUP'
           : 'Cuenta como transferencia';
-        g('cbSumCash').textContent = f(c.sc) + ' CUP';
-        g('cbSumTrf').textContent = f(c.st) + ' CUP';
+        g('cbSumCash').textContent = fa(c.sc) + ' CUP';
+        g('cbSumTrf').textContent = fa(c.st) + ' CUP';
         var fill = g('cbFill'), s = g('cbStatus');
         fill.style.width = Math.min(100, TOTAL > 0 ? c.paid / TOTAL * 100 : 0) + '%';
-        var showChg = c.diff > 0.005 && c.fx > 0;
-        if (!showChg && chC !== 'CUP') { chC = 'CUP'; sel('cbChgSeg', 'CUP'); }
+        var hayVuelto = c.diff > 0.005;
+        if (!hayVuelto) { dejar = false; g('cbDejar').checked = false; }
+        g('cbKeep').classList.toggle('cb-hide', !hayVuelto);
+        g('cbDejarAmt').textContent = '(' + fa(c.diff) + ' CUP)';
+        var showChg = hayVuelto && c.fx > 0 && !dejar;
+        if (!(hayVuelto && c.fx > 0) && chC !== 'CUP') { chC = 'CUP'; sel('cbChgSeg', 'CUP'); }
         if (c.diff < -0.005) {
           fill.style.background = 'var(--cb-warn)'; s.style.color = 'var(--cb-warn)';
-          s.textContent = 'Faltan ' + f(-c.diff) + ' CUP';
+          s.textContent = 'Faltan ' + fa(-c.diff) + ' CUP';
         } else if (c.diff <= 0.005) {
           fill.style.background = 'var(--cb-ok)'; s.style.color = 'var(--cb-ok)';
           s.textContent = 'Pago completo';
+        } else if (dejar) {
+          fill.style.background = 'var(--cb-ok)'; s.style.color = 'var(--cb-ok)';
+          s.textContent = 'Vuelto dejado: ' + fa(c.diff) + ' CUP (ganancia)';
         } else {
           fill.style.background = 'var(--cb-gold)'; s.style.color = 'var(--cb-gold)';
           s.textContent = 'Vuelto: ' + totalText(c.diff);
@@ -224,6 +241,7 @@ begin
         rotulo(t.estado || 'consultando...', !!t.aviso);
         g('cbNet').textContent = navigator.onLine ? 'En l\u00ednea' : 'Sin conexi\u00f3n';
         g('cbNet').style.color = navigator.onLine ? '' : 'var(--cb-warn)';
+        dejar = false; g('cbDejar').checked = false;
         sel('cbFxSeg', 'USD'); sel('cbChgSeg', 'CUP');
         upd();
         root.classList.add('cb-open');
@@ -234,15 +252,18 @@ begin
       var confirmar = function () {
         var c = calc();
         if (c.diff < -0.005) {
-          g('cbMsg').textContent = 'A\u00fan faltan ' + f(-c.diff) + ' CUP para completar el pago.';
+          g('cbMsg').textContent = 'A\u00fan faltan ' + fa(-c.diff) + ' CUP para completar el pago.';
           return;
         }
-        var L = [['Total', '<b>' + f(TOTAL) + ' CUP</b>']];
-        if (c.cash) { L.push(['Efectivo (CUP)', '<b>' + f(c.cash) + ' CUP</b>']); }
-        if (c.fx) { L.push(['Divisa en efectivo', '<b>' + f(c.fx, 2) + ' ' + fxC + '</b> (' + f(c.fxCup) + ' CUP)']); }
-        if (c.trf) { L.push(['Transferencia (CUP)', '<b>' + f(c.trf) + ' CUP</b>']); }
-        if (c.mlc) { L.push(['MLC (transferencia)', '<b>' + f(c.mlc, 2) + ' MLC</b> (' + f(c.mlcCup) + ' CUP)']); }
-        if (c.diff > 0.005) { L.push(['Vuelto entregado', '<b>' + changeText(c.diff) + '</b>']); }
+        var L = [['Total', '<b>' + fa(TOTAL) + ' CUP</b>']];
+        if (c.cash) { L.push(['Efectivo (CUP)', '<b>' + fa(c.cash) + ' CUP</b>']); }
+        if (c.fx) { L.push(['Divisa en efectivo', '<b>' + f(c.fx, 2) + ' ' + fxC + '</b> (' + fa(c.fxCup) + ' CUP)']); }
+        if (c.trf) { L.push(['Transferencia (CUP)', '<b>' + fa(c.trf) + ' CUP</b>']); }
+        if (c.mlc) { L.push(['MLC (transferencia)', '<b>' + f(c.mlc, 2) + ' MLC</b> (' + fa(c.mlcCup) + ' CUP)']); }
+        if (c.diff > 0.005) {
+          if (dejar) { L.push(['Vuelto dejado (ganancia)', '<b>' + fa(c.diff) + ' CUP</b>']); }
+          else { L.push(['Vuelto entregado', '<b>' + changeText(c.diff) + '</b>']); }
+        }
         g('cbDoneTxt').innerHTML = L.map(function (x) { return x[0] + ': ' + x[1]; }).join('<br>');
         try { sessionStorage.removeItem('venta'); } catch (e) { }
         g('cbMsg').textContent = '';
@@ -263,11 +284,15 @@ begin
         else if (pid === 'cbChgSeg') { chC = b.getAttribute('data-c'); sel('cbChgSeg', chC); upd(); }
       });
 
+      root.addEventListener('change', function (e) {
+        if (e.target && e.target.id === 'cbDejar') { dejar = !!e.target.checked; upd(); }
+      });
+
       root.addEventListener('input', function (e) {
         var id = e.target ? e.target.id : '';
         if (id === 'cbCash' || id === 'cbFx' || id === 'cbTrf' || id === 'cbMlc') { upd(); }
         else if (id === 'cbChFx') { man = { field: 'fx', v: n('cbChFx') }; fillSplit('fx'); }
-        else if (id === 'cbChCup') { man = { field: 'cup', v: n('cbChCup') }; fillSplit('cup'); }
+        else if (id === 'cbChCup') { man = { field: 'cup', v: n('cbChCup'), fx: n('cbChFx') }; fillSplit('cup'); }
       });
 
       // Para que Pascal cambie las tasas cuando elToque responde (no si la venta ya se confirmo)
