@@ -305,7 +305,17 @@ begin
         }
       };
 
-      if (!abrir()) { window.location.hash = '/vender'; }
+      if (!abrir()) { window.location.hash = '/vender'; return; }
+
+      // Que no quede el foco en ningun campo (en el telefono abriria el teclado solo).
+      // Se repite un par de veces porque el formulario puede enfocar un edit al terminar de crearse.
+      var sinFoco = function () {
+        var a = document.activeElement;
+        if (a && a !== document.body && a.blur) { a.blur(); }
+      };
+      sinFoco();
+      setTimeout(sinFoco, 0);
+      setTimeout(sinFoco, 200);
     })();
   end;
 end;

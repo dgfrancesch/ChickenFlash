@@ -232,6 +232,21 @@ begin
     TNavegacion.IrARuta('secciones');
 end;
 
+// Quita el foco de cualquier campo (en el telefono evita que se abra el teclado solo).
+// Se repite porque el formulario puede enfocar un campo al terminar de crearse.
+procedure QuitarFoco;
+begin
+  asm
+    var q = function () {
+      var a = document.activeElement;
+      if (a && a !== document.body && a.blur) { a.blur(); }
+    };
+    q();
+    setTimeout(q, 0);
+    setTimeout(q, 200);
+  end;
+end;
+
 { ---------- pantalla ---------- }
 
 procedure TForm3.WebFormCreate(Sender: TObject);
@@ -252,6 +267,7 @@ begin
   divInvFiltros.ElementHandle.addEventListener('click', @AlClicFiltros);
     divLista.ElementHandle.addEventListener('click', @AlClicLista);
       divLista.ElementHandle.addEventListener('change', @AlCambiarLista);
+  QuitarFoco;                                  // que el buscador no quede enfocado
   Cargar;
 end;
 

@@ -223,6 +223,21 @@ begin
   end;
 end;
 
+// Quita el foco de cualquier campo (en el telefono evita que se abra el teclado solo).
+// Se repite porque el formulario puede enfocar un campo al terminar de crearse.
+procedure QuitarFoco;
+begin
+  asm
+    var q = function () {
+      var a = document.activeElement;
+      if (a && a !== document.body && a.blur) { a.blur(); }
+    };
+    q();
+    setTimeout(q, 0);
+    setTimeout(q, 200);
+  end;
+end;
+
 { ---------- pantalla ---------- }
 
 procedure TForm2.WebFormCreate(Sender: TObject);
@@ -245,6 +260,7 @@ begin
   // Si se recargo en otra ruta (ej. #/cobrar), esta pantalla es Vender: se corrige la URL
   if TNavegacion.RutaActual <> 'vender' then
     TNavegacion.IrARuta('vender', True);
+  QuitarFoco;                                  // que el buscador no quede enfocado
   Cargar;
 end;
 
