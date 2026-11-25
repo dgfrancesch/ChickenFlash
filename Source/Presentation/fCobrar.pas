@@ -1,8 +1,8 @@
 unit fCobrar;
 
 // Pantalla de cobro (ruta #/cobrar). Lee la venta armada en el dashboard desde
-// sessionStorage ('venta'), deja elegir la forma de pago y al confirmar la registra
-// solo muestra el resumen (por ahora no guarda nada en la base de datos).
+// sessionStorage ('venta'), deja elegir la forma de pago y al confirmar la guarda
+// en la base de datos (registrar_venta) y muestra el resumen.
 // Las tasas salen de elToque (uTasas): al abrir se usa la última guardada y se consulta
 // elToque; si responde, se actualiza la pantalla; si no, se queda la guardada.
 
@@ -53,7 +53,7 @@ var
 implementation
 
 uses
-  uShell, uTasas;
+  uShell, uTasas, uVentasService;
 
 {$R *.dfm}
 
@@ -91,6 +91,44 @@ begin
   end;
 end;
 
+type
+  TGuardarFn = procedure(const Json: string; Cb: TJSFunction);
+
+[async]
+procedure GuardarInterno(const Json: string; Cb: TJSFunction);
+var
+  R: TResultadoVenta;
+  Ok: Boolean;
+  Err: string;
+begin
+  try
+    R := await(TResultadoVenta, TVentasService.RegistrarVenta(Json));
+    Ok := R.Ok;
+    Err := R.Error;
+  except
+    Ok := False;
+    Err := 'No se pudo guardar la venta. Intenta de nuevo.';
+  end;
+  asm
+    Cb(Ok, Err);
+  end;
+end;
+
+procedure GuardarPuente(const Json: string; Cb: TJSFunction);
+begin
+  GuardarInterno(Json, Cb);   // llamar a una async desde una no async es válido
+end;
+
+procedure PonerGuardar;
+var
+  Fn: TGuardarFn;
+begin
+  Fn := @GuardarPuente;
+  asm
+    window.CFGuardar = Fn;
+  end;
+end;
+
 // Toda la logica de la pantalla esta en JavaScript dentro de un asm.
 procedure InstalarCobro;
 begin
@@ -105,7 +143,7 @@ begin
       var g = function (id) { return root.querySelector('[id="' + id + '"]'); };
       var TOTAL = 0, VENTA = null;
       var R = { USD: 400, EUR: 430, MLC: 280 };
-      var fxC = 'USD', chC = 'CUP', man = null, dejar = false;
+      var fxC = 'USD', chC = 'CUP', man = null, dejar = false, guardando = false;
 
       var n = function (id) {
         var v = parseFloat(String(g(id).value).replace(',', '.'));
@@ -227,6 +265,15 @@ begin
         try { v = JSON.parse(sessionStorage.getItem('venta') || 'null'); } catch (e) { v = null; }
         if (!v || !v.items || !v.items.length) { return false; }
         VENTA = v;
+        // Id de la venta: se genera una sola vez, asi un reintento no la duplica
+        if (!VENTA.uid) {
+          VENTA.uid = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+            : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (ch) {
+                var r = Math.random() * 16 | 0;
+                return (ch === 'x' ? r : (r & 3 | 8)).toString(16);
+              });
+          try { sessionStorage.setItem('venta', JSON.stringify(VENTA)); } catch (e) { }
+        }
         TOTAL = r2(Number(v.total));
         var t = window.CFTasas || R;
         R = { USD: Number(t.USD), EUR: Number(t.EUR), MLC: Number(t.MLC) };
@@ -249,12 +296,28 @@ begin
         return true;
       };
 
-      var confirmar = function () {
-        var c = calc();
-        if (c.diff < -0.005) {
-          g('cbMsg').textContent = 'A\u00fan faltan ' + fa(-c.diff) + ' CUP para completar el pago.';
-          return;
-        }
+      // Pagos tal como entraron, restando el vuelto entregado (orden: efectivo, divisa, transf., MLC)
+      var armarPagos = function (c) {
+        var b = [
+          { m: 'efectivo',      mo: 'CUP', cup: c.cash,   tasa: 1,      raw: c.cash },
+          { m: 'exterior',      mo: fxC,   cup: c.fxCup,  tasa: R[fxC], raw: c.fx },
+          { m: 'transferencia', mo: 'CUP', cup: c.trf,    tasa: 1,      raw: c.trf },
+          { m: 'exterior',      mo: 'MLC', cup: c.mlcCup, tasa: R.MLC,  raw: c.mlc }
+        ];
+        var d = (!dejar && c.diff > 0.005) ? c.diff : 0;
+        var out = [];
+        b.forEach(function (x) {
+          var q = Math.min(x.cup, d);
+          d = r2(d - q);
+          var rest = r2(x.cup - q);
+          if (rest <= 0.004) { return; }
+          var monto = q === 0 ? x.raw : (x.tasa === 1 ? rest : Math.round(rest / x.tasa * 10000) / 10000);
+          out.push({ metodo: x.m, moneda: x.mo, monto: monto, tasa_cup: x.tasa });
+        });
+        return out;
+      };
+
+      var mostrarHecho = function (c) {
         var L = [['Total', '<b>' + fa(TOTAL) + ' CUP</b>']];
         if (c.cash) { L.push(['Efectivo (CUP)', '<b>' + fa(c.cash) + ' CUP</b>']); }
         if (c.fx) { L.push(['Divisa en efectivo', '<b>' + f(c.fx, 2) + ' ' + fxC + '</b> (' + fa(c.fxCup) + ' CUP)']); }
@@ -270,6 +333,38 @@ begin
         g('cbForm').classList.add('cb-hide');
         g('cbDone').classList.remove('cb-hide');
         root.scrollTop = 0;
+      };
+
+      var confirmar = function () {
+        if (guardando) { return; }
+        var c = calc();
+        if (c.diff < -0.005) {
+          g('cbMsg').textContent = 'A\u00fan faltan ' + fa(-c.diff) + ' CUP para completar el pago.';
+          return;
+        }
+        var items = [], falta = false;
+        for (var i = 0; i < VENTA.items.length; i++) {
+          var it = VENTA.items[i];
+          var pid = it.producto_id || it.id;
+          var pr = it.precio_cup != null ? it.precio_cup : it.precio;
+          if (!pid || pr == null) { falta = true; break; }
+          items.push({ producto_id: Number(pid), nombre: it.nombre,
+                       cantidad: Number(it.cantidad), precio_cup: Number(pr) });
+        }
+        if (falta) {
+          g('cbMsg').textContent = 'Faltan producto_id o precio en la venta. Hay que guardarlos desde el dashboard.';
+          return;
+        }
+               guardando = true;
+        g('cbOk').disabled = true;
+        g('cbMsg').textContent = 'Guardando...';
+        var payload = JSON.stringify({ id: VENTA.uid, total_cup: TOTAL, items: items, pagos: armarPagos(c) });
+        window.CFGuardar(payload, function (ok, error) {
+          guardando = false;
+          g('cbOk').disabled = false;
+          if (!ok) { g('cbMsg').textContent = error || 'No se pudo guardar la venta.'; return; }
+          mostrarHecho(c);
+        });
       };
 
       root.addEventListener('click', function (e) {
@@ -335,6 +430,7 @@ begin
   else
     Estado := 'consultando...';
   PonerTasas(T.Usd, T.Eur, T.Mlc, Estado, T.Origen = 'ejemplo');
+  PonerGuardar;
   InstalarCobro;
   ActualizarTasas;
 end;

@@ -25,6 +25,7 @@ var CACHED_URLS = [
   "Css/dashboard.css",
   "Css/Inventario.css",
   "Css/secciones.css",
+  "Css/tasas.css",
   "Css/uShell.css",
   "Fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf",
   "Fonts/PlusJakartaSans-VariableFont_wght.ttf",
@@ -36,6 +37,7 @@ var CACHED_URLS = [
   "Source/Presentation/fInventory.html",
   "Source/Presentation/fLogin.html",
   "Source/Presentation/fSecciones.html",
+  "Source/Presentation/fTasas.html",
   "styles.css"
 ];
 

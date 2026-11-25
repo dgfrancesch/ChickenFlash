@@ -21,7 +21,9 @@ uses
   fSecciones in 'Source\Presentation\fSecciones.pas' {Form5: TWebForm} {*.html},
   uVentasService in 'Source\Domain\Services\uVentasService.pas',
   fCobrar in 'Source\Presentation\fCobrar.pas' {Form6: TWebForm} {*.html},
-  uTasas in 'Source\Infraestructure\uTasas.pas';
+  uTasas in 'Source\Infraestructure\uTasas.pas',
+  fTasas in 'Source\Presentation\fTasas.pas' {Form7: TWebForm} {*.html},
+  uAjustes in 'Source\Infraestructure\uAjustes.pas';
 
 {$R *.res}
 
@@ -33,6 +35,8 @@ begin
     TNavegacion.Iniciar;
     TNavegacion.IrARuta(TNavegacion.RutaActual, True); // normaliza la URL
         if TNavegacion.RutaActual = 'inventario' then
+  Application.CreateForm(TForm3, Form3);
+  Application.CreateForm(TForm3, Form3);
   Application.CreateForm(TForm3, Form3)
     else if TNavegacion.RutaActual = 'agregar' then
       Application.CreateForm(TForm4, Form4)

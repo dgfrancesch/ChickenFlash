@@ -149,6 +149,12 @@
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
         <DCCReference Include="Source\Infraestructure\uTasas.pas"/>
+        <DCCReference Include="Source\Presentation\fTasas.pas">
+            <Form>Form7</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Source\Infraestructure\uAjustes.pas"/>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -244,6 +250,7 @@
         <None Include="Css\addProduct.css"/>
         <None Include="Css\secciones.css"/>
         <None Include="Css\cobrar.css"/>
+        <None Include="Css\tasas.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -489,6 +496,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Css\secciones.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\tasas.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

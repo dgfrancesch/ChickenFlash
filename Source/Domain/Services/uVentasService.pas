@@ -13,11 +13,20 @@ type
     Valor: Double;
   end;
 
+  TResultadoVenta = class
+  public
+    Ok: Boolean;
+    Error: string;
+  end;
+
   TVentasService = class
   public
     // Suma de las ventas completadas desde las 00:00 de hoy (hora del dispositivo)
     [async]
     class function VentasDeHoy: TResultadoMonto;
+    // Guarda la venta completa (venta + items + pagos + stock) con la función cobrar_venta
+    [async]
+    class function RegistrarVenta(const Json: string): TResultadoVenta;
   end;
 
 implementation
@@ -58,6 +67,29 @@ begin
     Suma := Suma + Double(TJSObject(Arr[i])['total_cup']);
   Result.Valor := Suma;
   Result.Ok := True;
+end;
+
+class function TVentasService.RegistrarVenta(const Json: string): TResultadoVenta;
+var
+  R: TApiResponse;
+begin
+  Result := TResultadoVenta.Create;
+  R := await(TApiResponse, THttp.Send('POST', '/rest/v1/rpc/registrar_venta',
+    '{"p_venta":' + Json + '}', TSession.Token));
+  Result.Ok := R.Ok;
+  if R.Ok then Exit;
+
+  console.log('Error BD ' + IntToStr(R.Status) + ': ' + R.Body);
+  if Pos('no autorizado', R.Body) > 0 then
+    Result.Error := 'Tu usuario no es admin, no puede registrar ventas.'
+  else
+    case R.Status of
+      0:   Result.Error := 'Sin conexión. La venta NO se guardó; intenta de nuevo.';
+      401: Result.Error := 'Tu sesión venció. Vuelve a iniciar sesión.';
+      403: Result.Error := 'No tienes permiso para registrar ventas.';
+    else
+      Result.Error := 'No se pudo guardar la venta (' + IntToStr(R.Status) + ').';
+    end;
 end;
 
 end.

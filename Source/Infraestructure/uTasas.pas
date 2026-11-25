@@ -3,6 +3,7 @@ unit uTasas;
 // Tasas de cambio de elToque, vía la función de Supabase (super-task).
 // - Consultar: pregunta ahora; si funciona la guarda, si no devuelve la última guardada.
 // - Guardada: la última tasa que se pudo bajar (o una de ejemplo si nunca hubo).
+// - Cambio: diferencia contra la tasa de hace ~24 h (la trae super-task en tasas_ayer).
 
 interface
 
@@ -17,6 +18,10 @@ type
     Mlc: Double;        // CUP por 1 MLC
     Hora: string;       // hora local en que se bajó esta tasa
     Origen: string;     // 'toque' (recién consultada), 'guardada' o 'ejemplo'
+    HayCambio: Boolean; // hay tasa de ayer para comparar
+    CamUsd: Double;     // variación en CUP respecto a hace ~24 h
+    CamEur: Double;
+    CamMlc: Double;
   end;
 
   TTasas = class
@@ -77,18 +82,23 @@ begin
   end;
 end;
 
-// Saca USD, EUR y MLC del JSON. El euro en elToque viene como ECU. null si algo no cuadra.
+// Saca USD, EUR y MLC del JSON (y los de ayer si vienen). El euro en elToque viene como ECU.
+// null si las tasas actuales no cuadran.
 function LeerTasas(const Cuerpo: string): TJSObject;
 begin
   asm
-    try {
-      var d = window.JSON.parse(Cuerpo);
-      var t = d.tasas || {};
+    function norm(t) {
+      if (!t) return null;
       var usd = Number(t.USD);
       var eur = Number(t.EUR != null ? t.EUR : t.ECU);
       var mlc = Number(t.MLC);
-      if (usd > 0 && eur > 0 && mlc > 0) {
-        Result = { USD: usd, EUR: eur, MLC: mlc, ts: Date.now() };
+      return (usd > 0 && eur > 0 && mlc > 0) ? { USD: usd, EUR: eur, MLC: mlc } : null;
+    }
+    try {
+      var d = window.JSON.parse(Cuerpo);
+      var a = norm(d.tasas);
+      if (a) {
+        Result = { USD: a.USD, EUR: a.EUR, MLC: a.MLC, ts: Date.now(), ayer: norm(d.tasas_ayer) };
       } else {
         Result = null;
       }
@@ -96,7 +106,16 @@ begin
   end;
 end;
 
+function TieneAyer(O: TJSObject): Boolean;
+begin
+  asm
+    Result = !!(O.ayer && O.ayer.USD > 0);
+  end;
+end;
+
 function ADe(O: TJSObject; const Origen: string): TTasasCup;
+var
+  Ayer: TJSObject;
 begin
   Result := TTasasCup.Create;
   Result.Usd := Double(O['USD']);
@@ -104,6 +123,15 @@ begin
   Result.Mlc := Double(O['MLC']);
   Result.Hora := HoraLocal(Double(O['ts']));
   Result.Origen := Origen;
+
+  Result.HayCambio := TieneAyer(O);
+  if Result.HayCambio then
+  begin
+    Ayer := TJSObject(O['ayer']);
+    Result.CamUsd := Result.Usd - Double(Ayer['USD']);
+    Result.CamEur := Result.Eur - Double(Ayer['EUR']);
+    Result.CamMlc := Result.Mlc - Double(Ayer['MLC']);
+  end;
 end;
 
 class function TTasas.Guardada: TTasasCup;
@@ -121,6 +149,7 @@ begin
     Result.Mlc := EJ_MLC;
     Result.Hora := '';
     Result.Origen := 'ejemplo';
+    Result.HayCambio := False;
   end;
 end;
 

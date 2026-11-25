@@ -20,7 +20,7 @@ type
 implementation
 
 uses
-  uShell, fDashboard, fInventory, fAddProduct, fSecciones, fCobrar;
+  uShell, fDashboard, fInventory, fAddProduct, fSecciones, fCobrar, fTasas;
 
 function ClasePorRuta(const ARuta: string): TWebFormClass;
 begin
@@ -29,6 +29,7 @@ begin
   else if ARuta = 'agregar' then Result := TForm4
   else if ARuta = 'secciones' then Result := TForm5
   else if ARuta = 'cobrar' then Result := TForm6
+  else if ARuta = 'tasas' then Result := TForm7
   else Result := nil;
 end;
 
