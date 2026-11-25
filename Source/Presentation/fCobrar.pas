@@ -3,8 +3,9 @@ unit fCobrar;
 // Pantalla de cobro (ruta #/cobrar). Lee la venta armada en el dashboard desde
 // sessionStorage ('venta'), deja elegir la forma de pago y al confirmar la guarda
 // en la base de datos (registrar_venta) y muestra el resumen.
-// Las tasas salen de elToque (uTasas): al abrir se usa la última guardada y se consulta
-// elToque; si responde, se actualiza la pantalla; si no, se queda la guardada.
+// Las tasas salen de elToque (uTasas); las monedas fijadas a mano en Ajustes usan
+// la tasa del usuario. Al abrir se usa la última guardada y se consulta elToque;
+// si responde, se actualiza la pantalla; si no, se queda la guardada.
 
 interface
 
@@ -74,19 +75,23 @@ begin
 end;
 
 // Deja las tasas listas para cuando se abra la pantalla (la primera vez)
-procedure PonerTasas(ValUsd, ValEur, ValMlc: Double; const Estado: string; Aviso: Boolean);
+procedure PonerTasas(ValUsd, ValEur, ValMlc: Double; ManUsd, ManEur, ManMlc: Boolean;
+  const Estado: string; Aviso: Boolean);
 begin
   asm
-    window.CFTasas = { USD: ValUsd, EUR: ValEur, MLC: ValMlc, estado: Estado, aviso: Aviso };
+    window.CFTasas = { USD: ValUsd, EUR: ValEur, MLC: ValMlc,
+      man: { USD: ManUsd, EUR: ManEur, MLC: ManMlc }, estado: Estado, aviso: Aviso };
   end;
 end;
 
 // Cambia las tasas con la pantalla ya abierta y recalcula todo
-procedure AplicarTasas(ValUsd, ValEur, ValMlc: Double; const Estado: string; Aviso: Boolean);
+procedure AplicarTasas(ValUsd, ValEur, ValMlc: Double; ManUsd, ManEur, ManMlc: Boolean;
+  const Estado: string; Aviso: Boolean);
 begin
   asm
     if (window.CFCobro) {
-      window.CFCobro.tasas({ USD: ValUsd, EUR: ValEur, MLC: ValMlc }, Estado, Aviso);
+      window.CFCobro.tasas({ USD: ValUsd, EUR: ValEur, MLC: ValMlc,
+        man: { USD: ManUsd, EUR: ManEur, MLC: ManMlc } }, Estado, Aviso);
     }
   end;
 end;
@@ -143,6 +148,7 @@ begin
       var g = function (id) { return root.querySelector('[id="' + id + '"]'); };
       var TOTAL = 0, VENTA = null;
       var R = { USD: 400, EUR: 430, MLC: 280 };
+      var MAN = { USD: false, EUR: false, MLC: false };
       var fxC = 'USD', chC = 'CUP', man = null, dejar = false, guardando = false;
 
       var n = function (id) {
@@ -166,9 +172,13 @@ begin
         }
       };
 
-      // Linea de tasas: de donde salen y de cuando son (en naranja si no son recientes)
+      // Linea de tasas: de donde sale cada una (elToque o manual de Ajustes) y de cuando
+      // son (en naranja si no son recientes)
       var rotulo = function (estado, aviso) {
-        g('cbRates').textContent = 'Tasa elToque (' + estado + '): 1 USD = ' + R.USD + ' CUP \u00b7 1 EUR = ' + R.EUR + ' CUP \u00b7 1 MLC = ' + R.MLC + ' CUP';
+        var s = function (k) { return MAN[k] ? 'manual' : 'elToque'; };
+        g('cbRates').innerHTML = '1 USD = ' + R.USD + ' CUP (' + s('USD') + ') \u00b7 1 EUR = ' + R.EUR +
+          ' CUP (' + s('EUR') + ') \u00b7 1 MLC = ' + R.MLC + ' CUP (' + s('MLC') + ')<br>elToque: ' + estado +
+          ' \u00b7 <a href="#/ajustes" style="color:var(--cb-gold);text-decoration:underline">Cambiar en Ajustes</a>';
         g('cbRates').style.color = aviso ? 'var(--cb-warn)' : '';
       };
 
@@ -277,6 +287,7 @@ begin
         TOTAL = r2(Number(v.total));
         var t = window.CFTasas || R;
         R = { USD: Number(t.USD), EUR: Number(t.EUR), MLC: Number(t.MLC) };
+        MAN = t.man || MAN;
 
         g('cbTotal').textContent = f(TOTAL, TOTAL % 1 ? 2 : 0) + ' CUP';
         var partes = [];
@@ -395,6 +406,7 @@ begin
         tasas: function (t, estado, aviso) {
           if (!g('cbDone').classList.contains('cb-hide')) { return; }
           R = { USD: Number(t.USD), EUR: Number(t.EUR), MLC: Number(t.MLC) };
+          MAN = t.man || MAN;
           rotulo(estado, aviso);
           upd();
         }
@@ -429,7 +441,7 @@ begin
     Estado := 'sin tasa guardada, consultando...'
   else
     Estado := 'consultando...';
-  PonerTasas(T.Usd, T.Eur, T.Mlc, Estado, T.Origen = 'ejemplo');
+  PonerTasas(T.EfUsd, T.EfEur, T.EfMlc, T.ManUsd, T.ManEur, T.ManMlc, Estado, T.Origen = 'ejemplo');
   PonerGuardar;
   InstalarCobro;
   ActualizarTasas;
@@ -441,7 +453,7 @@ var
 begin
   T := await(TTasasCup, TTasas.Consultar);
   if TShell.Actual <> Self then Exit;          // ya saliste de esta pantalla
-  AplicarTasas(T.Usd, T.Eur, T.Mlc, EstadoDe(T), T.Origen <> 'toque');
+  AplicarTasas(T.EfUsd, T.EfEur, T.EfMlc, T.ManUsd, T.ManEur, T.ManMlc, EstadoDe(T), T.Origen <> 'toque');
 end;
 
 end.

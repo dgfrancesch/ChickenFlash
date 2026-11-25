@@ -69,8 +69,8 @@ object Form8: TForm8
     Role = ''
   end
   object ajStock: TWebSpinEdit
-    Left = 505
-    Top = 0
+    Left = 506
+    Top = -1
     Width = 96
     Height = 25
     ElementID = 'ajStock'
@@ -82,8 +82,8 @@ object Form8: TForm8
     Color = clWhite
     ElementFont = efCSS
     ElementPosition = epIgnore
-    Increment = 1
-    MaxValue = 100
+    Increment = 5
+    MaxValue = 100000
     MinValue = 0
     Role = ''
     Value = 0
@@ -128,8 +128,8 @@ object Form8: TForm8
     Color = clWhite
     ElementFont = efCSS
     ElementPosition = epIgnore
-    Increment = 1
-    MaxValue = 100
+    Increment = 5
+    MaxValue = 100000
     MinValue = 0
     Role = ''
     Value = 0
@@ -192,7 +192,7 @@ object Form8: TForm8
     ElementFont = efCSS
     ElementPosition = epIgnore
     Increment = 1
-    MaxValue = 100
+    MaxValue = 100000
     MinValue = 0
     Role = ''
     Value = 0
@@ -239,8 +239,8 @@ object Form8: TForm8
     Color = clWhite
     ElementFont = efCSS
     ElementPosition = epIgnore
-    Increment = 1
-    MaxValue = 100
+    Increment = 5
+    MaxValue = 100000
     MinValue = 0
     Role = ''
     Value = 0

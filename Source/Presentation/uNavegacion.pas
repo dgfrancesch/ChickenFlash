@@ -21,7 +21,7 @@ implementation
 
 uses
   uShell, uAjustes, fDashboard, fInventory, fAddProduct, fSecciones, fCobrar,
-  fTasas, fAjustes,fHistorial;
+  fTasas, fAjustes,fHistorial, fConteo;
 
 function ClasePorRuta(const ARuta: string): TWebFormClass;
 begin
@@ -39,8 +39,10 @@ begin
     Result := TForm7
   else if ARuta = 'ajustes' then
     Result := TForm8
-    else if ARuta = 'historial' then
-  Result := TForm9
+  else if ARuta = 'historial' then
+    Result := TForm9
+  else if ARuta = 'conteo' then
+    Result := TForm10
   else
     Result := nil;
 end;
@@ -102,7 +104,7 @@ end;
 
 class procedure TNavegacion.Iniciar;
 begin
-  TAjustes.Aplicar;     // aplica el tema guardado en Ajustes
+  TAjustes.Aplicar; // aplica el tema guardado en Ajustes
   TShell.AlNavegar := procedure(const Destino: string)
     begin
       if ClasePorRuta(Destino) <> nil then

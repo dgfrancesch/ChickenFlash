@@ -1,0 +1,84 @@
+object Form10: TForm10
+  Width = 640
+  Height = 480
+  OnCreate = WebFormCreate
+  object cvBtnDenoms: TWebButton
+    Left = 0
+    Top = 0
+    Width = 96
+    Height = 25
+    Caption = 'cvBtnDenoms'
+    ElementID = 'cvBtnDenoms'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object cvCant: TWebHTMLSpan
+    Left = 101
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'cvCant'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 1
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object lblInicial: TWebHTMLDiv
+    Left = 202
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'lblInicial'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 2
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object cvGrid: TWebHTMLDiv
+    Left = 303
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'cvGrid'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 3
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object cvList: TWebHTMLDiv
+    Left = 404
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'cvList'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 4
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object cvRoot: TWebHTMLDiv
+    Left = 505
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'cvRoot'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 5
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+end

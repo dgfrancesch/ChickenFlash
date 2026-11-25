@@ -1,0 +1,38 @@
+<div class="cv" id="cvRoot">
+  <div class="cv-app">
+    <header class="cv-top">
+      <button class="cv-back" type="button" data-cv="atras" aria-label="Atr&aacute;s"><svg class="cv-i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="cv-av" id="lblInicial">J</div>
+      <div class="cv-who">
+        <b>Conteo de billetes</b>
+        <small>Chicken Flash &middot; Arqueo r&aacute;pido</small>
+      </div>
+    </header>
+
+    <section class="cv-hero">
+      <div class="cv-hero-l">
+        <small>Total contado</small>
+        <b id="cvTotal">0 CUP</b>
+        <span id="cvCant">0 billetes en caja</span>
+      </div>
+      <div class="cv-hero-act">
+        <button type="button" class="cv-btn" id="cvBtnDenoms" data-cv="denoms" aria-expanded="false">
+          <svg class="cv-i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>Denominaciones
+        </button>
+        <button type="button" class="cv-btn" data-cv="limpiar">
+          <svg class="cv-i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Limpiar
+        </button>
+      </div>
+    </section>
+
+    <section class="cv-cfg" id="cvCfg" hidden>
+      <div class="cv-cfg-head">
+        <b>Denominaciones visibles</b>
+        <small>Toca para mostrar u ocultar</small>
+      </div>
+      <div class="cv-grid" id="cvGrid"></div>
+    </section>
+
+    <div class="cv-list" id="cvList"></div>
+  </div>
+</div>
