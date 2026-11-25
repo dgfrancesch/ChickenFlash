@@ -262,6 +262,7 @@
         <None Include="Css\cobrar.css"/>
         <None Include="Css\tasas.css"/>
         <None Include="Css\ajustes.css"/>
+        <None Include="Css\historial.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -507,6 +508,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Css\dashboard.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\historial.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

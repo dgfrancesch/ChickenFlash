@@ -79,12 +79,10 @@ var
 implementation
 
 uses
-  uShell, uSession, uNavegacion, uDom;
+  uShell, uSession, uNavegacion, uDom, uAjustes;
 
 {$R *.dfm}
 
-const
-  LIMITE_STOCK_BAJO = 8;
 
 { ---------- tarjeta de producto ---------- }
 
@@ -134,7 +132,7 @@ begin
   ClaseStock := 'stock';
   if P.Stock <= 0 then
     ClaseStock := 'stock zero'
-  else if P.Stock <= LIMITE_STOCK_BAJO then
+    else if TAjustes.StockBajo(P.Stock) then
     ClaseStock := 'stock low';
 
   Result :=
@@ -367,7 +365,7 @@ begin
   if FFiltroKpi = 'activos' then
     Result := P.Visible
   else if FFiltroKpi = 'bajo' then
-    Result := P.Visible and (P.Stock <= LIMITE_STOCK_BAJO);
+        Result := P.Visible and TAjustes.StockBajo(P.Stock);
   if not Result then Exit;
   if FBusqueda <> '' then
     Result := Pos(FBusqueda, Normalizar(P.Nombre)) > 0;
@@ -480,7 +478,7 @@ end;
 procedure TForm3.PintarKpis;
 var
   Activos, Bajos, i: Integer;
-  ElActivos, ElBajo: TJSElement;
+  ElActivos, ElBajo, ElTxtBajo: TJSElement;
 begin
   Activos := 0;
   Bajos := 0;
@@ -488,14 +486,18 @@ begin
     if FProductos[i].Visible then
     begin
       Inc(Activos);
-      if FProductos[i].Stock <= LIMITE_STOCK_BAJO then
+      if TAjustes.StockBajo(FProductos[i].Stock) then
         Inc(Bajos);
     end;
 
   ElActivos := document.getElementById('lblKpiActivos');
   ElBajo := document.getElementById('lblKpiBajo');
+  ElTxtBajo := document.getElementById('lblKpiBajoTxt');
   if ElActivos <> nil then ElActivos.textContent := IntToStr(Activos);
   if ElBajo <> nil then ElBajo.textContent := IntToStr(Bajos);
+    if ElTxtBajo <> nil then
+    ElTxtBajo.textContent := 'Stock bajo (' + #$2264 + ' ' +
+      IntToStr(TAjustes.LimiteStock) + ')';
 end;
 
 procedure TForm3.btnAgregarClick(Sender: TObject);

@@ -1,0 +1,138 @@
+/* ===== Historial de ventas (.hv) — oscuro por defecto ===== */
+.hv{
+  --bg:#0f172a; --card:#1b2840; --card2:#16223a; --line:#33425e;
+  --txt:#f1f5fb; --mut:#93a0b6; --sub:#cbd5e1; --gold:#eab308; --red:#b91c1c;
+  --ok:#4ade80; --warn:#fb923c; --teal:#2dd4bf; --field:#0b1426;
+  --anu:#f87171;
+}
+.hv *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.hv [hidden]{display:none!important}
+.hv button{border:0;padding:0;cursor:pointer;background:none;font:inherit;color:inherit}
+
+.hv-app{
+  max-width:480px;
+  margin:0 auto;
+  padding:16px 16px 104px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  color:var(--txt);
+  font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  /* fondo sólido a todo el ancho y alto de la pantalla */
+  min-height:100vh;
+  background:var(--bg);
+  box-shadow:0 0 0 100vmax var(--bg);
+  clip-path:inset(0 -100vmax);
+}
+.hv-i{
+  width:20px;height:20px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none;
+}
+
+/* Cabecera */
+.hv-top{display:flex;align-items:center;gap:12px}
+.hv .hv-back{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--card);border:1px solid var(--line);
+  display:grid;place-items:center;color:var(--txt);flex:none;
+}
+.hv .hv-back:active{background:var(--line)}
+.hv-av{
+  width:40px;height:40px;border-radius:50%;background:var(--red);
+  display:grid;place-items:center;font-weight:700;font-size:17px;flex:none;color:#fff;
+}
+.hv-who{flex:1;min-width:0}
+.hv-who b{display:block;font-size:17px;line-height:1.2;color:var(--txt)}
+.hv-who small{color:var(--mut);font-size:12px}
+
+/* KPIs */
+.hv-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hv-kpi{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:16px;padding:10px 14px;
+}
+.hv-kpi small{color:var(--mut);font-size:12px;display:block}
+.hv-kpi b{display:block;font-size:18px;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--txt)}
+.hv-kpi .g{color:var(--gold)}
+
+/* Buscador */
+.hv-search{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card);border:1px solid var(--line);border-radius:999px;
+  padding:0 14px;color:var(--mut);
+}
+.hv-search:focus-within{border-color:var(--gold)}
+.hv-search input{
+  flex:1;min-width:0;height:42px;background:transparent;border:0;
+  color:var(--txt);font:inherit;font-size:14px;outline:0;
+}
+.hv-search input::placeholder{color:var(--mut);opacity:.85}
+
+/* Filtros */
+.hv-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.hv-chips::-webkit-scrollbar{display:none}
+.hv-chips button{
+  flex:none;padding:8px 14px;border-radius:999px;
+  background:var(--card);border:1px solid var(--line);
+  color:var(--sub);font-size:13px;
+}
+.hv-chips button.on{
+  background:var(--gold);border-color:var(--gold);color:#1a1300;font-weight:700;
+}
+
+/* Lista */
+.hv-list{display:flex;flex-direction:column;gap:10px}
+.hv-empty{
+  text-align:center;color:var(--mut);padding:34px 16px;
+  background:var(--card2);border:1px dashed var(--line);border-radius:18px;
+}
+.hv-cache{text-align:center;color:var(--warn);font-size:12px}
+
+.hv-sale{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:12px 14px;display:flex;flex-direction:column;gap:8px;
+}
+.hv-head{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  gap:10px;text-align:left;
+}
+.hv-id{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hv-id b{font-size:15px;font-variant-numeric:tabular-nums;color:var(--txt)}
+.hv-tag{
+  font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;
+  background:var(--field);border:1px solid var(--line);color:var(--sub);
+}
+.hv-tag.usd{background:rgba(74,222,128,.14);border-color:rgba(74,222,128,.35);color:var(--ok)}
+.hv-tag.tr{background:rgba(45,212,191,.14);border-color:rgba(45,212,191,.35);color:var(--teal)}
+.hv-tag.anu{background:rgba(185,28,28,.18);border-color:rgba(248,113,113,.4);color:var(--anu)}
+
+.hv-tot{
+  font-size:17px;font-weight:800;color:var(--gold);
+  font-variant-numeric:tabular-nums;flex:none;
+}
+.hv-sub{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;font-size:12px;color:var(--mut);
+}
+.hv-res{color:var(--sub)}
+.hv-more{color:var(--mut);font-size:12px;padding:6px 0 6px 16px;margin:-6px 0}
+.hv-more:hover{color:var(--gold)}
+
+.hv-items{
+  border-top:1px solid var(--line);padding-top:8px;
+  display:flex;flex-direction:column;gap:5px;
+}
+.hv-line{
+  display:flex;justify-content:space-between;gap:10px;
+  font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums;
+}
+.hv-line span:last-child{color:var(--txt);font-weight:600;flex:none}
+
+/* ===== MODO CLARO: misma paleta que .inv y .agr ===== */
+:root[data-theme="light"] .hv{
+  --bg:#f1f5f9; --card:#ffffff; --card2:#f8fafc; --line:#cbd5e1;
+  --txt:#0f172a; --mut:#475569; --sub:#334155; --gold:#ca8a04;
+  --ok:#16a34a; --warn:#d97706; --teal:#0d9488; --field:#f1f5f9;
+  --anu:#b91c1c;
+}
+:root[data-theme="light"] .hv-tag.anu{background:rgba(185,28,28,.12);border-color:rgba(185,28,28,.35)}

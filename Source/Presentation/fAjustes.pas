@@ -196,10 +196,13 @@ begin
   end
   else if Acc = 'limpiar' then
   begin
-    if Confirmar('¿Borrar los datos guardados en este dispositivo?') then
+    if Confirmar('¿Borrar los datos guardados y restablecer los ajustes?') then
     begin
       THttp.LimpiarCache;
-      Aviso('Datos guardados borrados');
+      TAjustes.Restablecer;
+      PonerValor('ajStock', TAjustes.LimiteStock);
+      Refrescar;
+      Aviso('Datos borrados y ajustes restablecidos');
     end;
   end
   else if Acc = 'salir' then

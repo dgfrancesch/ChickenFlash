@@ -14,7 +14,8 @@
 .aj-i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .aj-app{width:100%;flex:1 0 auto;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:14px;
   padding:16px 16px calc(12px + var(--sh-nav-h,60px) + var(--sh-pie-h,26px))}
-  .aj-back{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--on-surface)}
+  .aj-back{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--on-surface);background:var(--card);border:1px solid var(--outline-variant)}
+.aj-back:active{background:var(--outline-variant)}
 
 .aj-top{display:flex;align-items:center;gap:12px}
 .aj-av{width:40px;height:40px;border-radius:50%;background:var(--brand-red);color:#fff;display:grid;place-items:center;font:700 17px var(--font-headline);flex:none}

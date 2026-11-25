@@ -54,12 +54,10 @@ var
 implementation
 
 uses
-  uShell, uSession, uDom, uVentasService, uNavegacion;
+  uShell, uSession, uDom, uVentasService, uNavegacion, uAjustes;
 
 {$R *.dfm}
 
-const
-  LIMITE_STOCK_BAJO = 8;
 
 { ---------- utilidades ---------- }
 
@@ -455,7 +453,7 @@ begin
       PonerTexto(Card, '.db-stock', 'Quedan ' + Numero(Quedan, 3) + ' ' + UnidadDe(P));
     Chip := Card.querySelector('.db-stock');
     if Chip <> nil then
-      PonerClase(Chip, 'db-stock--bajo', Quedan <= LIMITE_STOCK_BAJO);
+            PonerClase(Chip, 'db-stock--bajo', TAjustes.StockBajo(Quedan));
 
     Precio := Miles(P.Precio) + ' CUP';
     if P.TipoVenta = 'peso' then

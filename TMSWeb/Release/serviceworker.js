@@ -24,6 +24,7 @@ var CACHED_URLS = [
   "Css/ajustes.css",
   "Css/cobrar.css",
   "Css/dashboard.css",
+  "Css/historial.css",
   "Css/Inventario.css",
   "Css/secciones.css",
   "Css/tasas.css",

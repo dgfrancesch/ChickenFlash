@@ -51,7 +51,6 @@ object Form9: TForm9
     ElementPosition = epIgnore
     HeightStyle = ssAuto
     HeightPercent = 100.000000000000000000
-    Text = 'hvBusca'
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end

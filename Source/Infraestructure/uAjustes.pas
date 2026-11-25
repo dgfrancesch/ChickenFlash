@@ -23,6 +23,7 @@ type
     class procedure PonerTasaManual(const Mon: string; V: Double);
     class function MonedaBase: string;                 // moneda marcada por defecto en el conversor
     class procedure PonerMonedaBase(const V: string);
+        class procedure Restablecer;                       // borra todos los ajustes: todo vuelve a lo de fábrica
 
     class function LimiteStock: Integer;
     class procedure PonerLimiteStock(V: Integer);
@@ -143,5 +144,21 @@ class function TAjustes.StockBajo(Stock: Double): Boolean;
 begin
   Result := Stock <= LimiteStock;
 end;
+
+class procedure TAjustes.Restablecer;
+begin
+  asm
+    try {
+      var borrar = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('cfaj_') === 0) borrar.push(k);
+      }
+      borrar.forEach(function (k) { localStorage.removeItem(k); });
+    } catch (e) {}
+  end;
+  document.documentElement.setAttribute('data-theme', 'dark');   // tema por defecto
+end;
+
 
 end.
