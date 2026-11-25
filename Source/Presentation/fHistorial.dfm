@@ -1,0 +1,71 @@
+object Form9: TForm9
+  Width = 640
+  Height = 480
+  OnCreate = WebFormCreate
+  object hvList: TWebHTMLDiv
+    Left = 0
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'hvList'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object hvRoot: TWebHTMLDiv
+    Left = 101
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'hvRoot'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 1
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object lblInicial: TWebHTMLDiv
+    Left = 202
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'lblInicial'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 2
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object hvBusca: TWebEdit
+    Left = 303
+    Top = 0
+    Width = 96
+    Height = 25
+    ChildOrder = 3
+    ElementID = 'hvBusca'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    Text = 'hvBusca'
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object hvChips: TWebHTMLDiv
+    Left = 404
+    Top = 0
+    Width = 96
+    Height = 25
+    ElementID = 'hvChips'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 4
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+end

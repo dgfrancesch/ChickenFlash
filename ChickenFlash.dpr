@@ -24,7 +24,8 @@ uses
   uTasas in 'Source\Infraestructure\uTasas.pas',
   fTasas in 'Source\Presentation\fTasas.pas' {Form7: TWebForm} {*.html},
   uAjustes in 'Source\Infraestructure\uAjustes.pas',
-  fAjustes in 'Source\Presentation\fAjustes.pas' {Form8: TWebForm} {*.html};
+  fAjustes in 'Source\Presentation\fAjustes.pas' {Form8: TWebForm} {*.html},
+  fHistorial in 'Source\Presentation\fHistorial.pas' {Form9: TWebForm} {*.html};
 
 {$R *.res}
 

@@ -135,9 +135,10 @@ begin
       <button class="sh-x" type="button" data-accion="cerrar" aria-label="Cerrar"><svg class="sh-i"><use href="#sh-close"/></svg></button>
       </header>
       <div class="sh-lado-menu">
+      <button class="sh-item" type="button" data-destino="deudas"><svg class="sh-i"><use href="#sh-reporte"/></svg><span>Deudas</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
       <button class="sh-item" type="button" data-destino="historial"><svg class="sh-i"><use href="#sh-historial"/></svg><span>Historial de ventas</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
       <button class="sh-item" type="button" data-destino="tasas"><svg class="sh-i"><use href="#sh-tasa"/></svg><span>Tasas de cambio</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
-      <button class="sh-item" type="button" data-destino="compras"><svg class="sh-i"><use href="#sh-gasto"/></svg><span>Compras y gastos</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
+      <button class="sh-item" type="button" data-destino="conteo"><svg class="sh-i"><use href="#sh-gasto"/></svg><span>Conteo de billetes</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
       <button class="sh-item" type="button" data-destino="reportes"><svg class="sh-i"><use href="#sh-reporte"/></svg><span>Reportes</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
       <button class="sh-item" type="button" data-destino="ajustes"><svg class="sh-i"><use href="#sh-ajustes"/></svg><span>Ajustes</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
       </div>

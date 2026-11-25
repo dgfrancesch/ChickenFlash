@@ -36,6 +36,7 @@ var CACHED_URLS = [
   "Source/Presentation/fAjustes.html",
   "Source/Presentation/fCobrar.html",
   "Source/Presentation/fDashboard.html",
+  "Source/Presentation/fHistorial.html",
   "Source/Presentation/fInventory.html",
   "Source/Presentation/fLogin.html",
   "Source/Presentation/fSecciones.html",

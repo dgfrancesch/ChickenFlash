@@ -1,0 +1,32 @@
+<div class="hv" id="hvRoot">
+  <div class="hv-app">
+    <header class="hv-top">
+      <button class="hv-back" type="button" data-hv="atras" aria-label="Atrás"><svg class="hv-i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="hv-av" id="lblInicial">J</div>
+      <div class="hv-who">
+        <b>Historial de ventas</b>
+        <small>Chicken Flash · Registro de cobros</small>
+      </div>
+    </header>
+
+    <div class="hv-kpis">
+      <div class="hv-kpi"><small>Total vendido</small><b class="g" id="hvSum">0 CUP</b></div>
+      <div class="hv-kpi"><small>Tickets filtrados</small><b id="hvCnt">0 ventas</b></div>
+    </div>
+
+    <label class="hv-search">
+      <svg class="hv-i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="hvBusca" type="search" placeholder="Buscar por #ticket o producto..." autocomplete="off">
+    </label>
+
+    <div class="hv-chips" id="hvChips">
+      <button class="on" type="button" data-hv="filtro" data-v="hoy">Hoy</button>
+      <button type="button" data-hv="filtro" data-v="ayer">Ayer</button>
+      <button type="button" data-hv="filtro" data-v="efectivo">Efectivo</button>
+      <button type="button" data-hv="filtro" data-v="transfer">Transferencia</button>
+      <button type="button" data-hv="filtro" data-v="all">Todas</button>
+    </div>
+
+    <div class="hv-list" id="hvList"></div>
+  </div>
+</div>
