@@ -35,8 +35,8 @@ function Leer(const Clave, Defecto: string): string;
 begin
   asm
     try {
-      var o = window.JSON.parse(localStorage.getItem('cfajustes') || '{}') || {};
-      Result = (o[Clave] != null) ? String(o[Clave]) : Defecto;
+      var v = localStorage.getItem('cfaj_' + Clave);
+      Result = (v !== null) ? v : Defecto;
     } catch (e) { Result = Defecto; }
   end;
 end;
@@ -44,11 +44,7 @@ end;
 procedure Escribir(const Clave, Valor: string);
 begin
   asm
-    try {
-      var o = window.JSON.parse(localStorage.getItem('cfajustes') || '{}') || {};
-      o[Clave] = Valor;
-      localStorage.setItem('cfajustes', window.JSON.stringify(o));
-    } catch (e) {}
+    try { localStorage.setItem('cfaj_' + Clave, Valor); } catch (e) {}
   end;
 end;
 

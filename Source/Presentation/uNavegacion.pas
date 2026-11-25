@@ -12,7 +12,7 @@ type
   public
     class procedure Registrar(AForm: TWebForm);
     class procedure IrA(AClase: TWebFormClass);
-    class function RutaActual: string;                 // lee #/ruta (por defecto 'vender')
+    class function RutaActual: string; // lee #/ruta (por defecto 'vender')
     class procedure IrARuta(const ARuta: string; AReemplazar: Boolean = False);
     class procedure Iniciar;
   end;
@@ -20,17 +20,27 @@ type
 implementation
 
 uses
-  uShell, fDashboard, fInventory, fAddProduct, fSecciones, fCobrar, fTasas;
+  uShell, uAjustes, fDashboard, fInventory, fAddProduct, fSecciones, fCobrar,
+  fTasas, fAjustes;
 
 function ClasePorRuta(const ARuta: string): TWebFormClass;
 begin
-  if ARuta = 'vender' then Result := TForm2
-  else if ARuta = 'inventario' then Result := TForm3
-  else if ARuta = 'agregar' then Result := TForm4
-  else if ARuta = 'secciones' then Result := TForm5
-  else if ARuta = 'cobrar' then Result := TForm6
-  else if ARuta = 'tasas' then Result := TForm7
-  else Result := nil;
+  if ARuta = 'vender' then
+    Result := TForm2
+  else if ARuta = 'inventario' then
+    Result := TForm3
+  else if ARuta = 'agregar' then
+    Result := TForm4
+  else if ARuta = 'secciones' then
+    Result := TForm5
+  else if ARuta = 'cobrar' then
+    Result := TForm6
+  else if ARuta = 'tasas' then
+    Result := TForm7
+  else if ARuta = 'ajustes' then
+    Result := TForm8
+  else
+    Result := nil;
 end;
 
 function AlCambiarHash(Event: TJSEvent): Boolean;
@@ -40,7 +50,8 @@ begin
   Result := True;
   Clase := ClasePorRuta(TNavegacion.RutaActual);
   if Clase <> nil then
-    TNavegacion.IrA(Clase);          // el formulario nuevo marca su pestaña en WebFormCreate
+    TNavegacion.IrA(Clase);
+  // el formulario nuevo marca su pestaña en WebFormCreate
 end;
 
 class procedure TNavegacion.Registrar(AForm: TWebForm);
@@ -62,9 +73,10 @@ end;
 class procedure TNavegacion.IrARuta(const ARuta: string; AReemplazar: Boolean);
 begin
   if AReemplazar then
-    window.history.replaceState(nil, '', '#/' + ARuta)   // no añade historial ni dispara hashchange
+    window.history.replaceState(nil, '', '#/' + ARuta)
+    // no añade historial ni dispara hashchange
   else
-    window.location.hash := '/' + ARuta;                   // añade historial y dispara hashchange
+    window.location.hash := '/' + ARuta; // añade historial y dispara hashchange
 end;
 
 class procedure TNavegacion.IrA(AClase: TWebFormClass);
@@ -88,13 +100,14 @@ end;
 
 class procedure TNavegacion.Iniciar;
 begin
-  TShell.AlNavegar :=
-    procedure(const Destino: string)
+  TAjustes.Aplicar;     // aplica el tema guardado en Ajustes
+  TShell.AlNavegar := procedure(const Destino: string)
     begin
       if ClasePorRuta(Destino) <> nil then
         IrARuta(Destino)
       else
-        console.log('Pantalla pendiente: ' + Destino);   // caja, historial, tasas...
+        console.log('Pantalla pendiente: ' + Destino);
+      // caja, historial, tasas...
     end;
 
   if not FEscuchando then

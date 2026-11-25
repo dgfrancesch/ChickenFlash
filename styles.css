@@ -400,6 +400,30 @@ html[data-theme="light"] body {
 
 .pagina { background: transparent !important; }
 
-body.sh-activo{
-  background:#0f172a !important;   /* quita también la imagen de comida */
+/* ===== MODO CLARO: Inventario (.inv) y Agregar producto (.agr) ===== */
+:root[data-theme="light"] .inv,
+:root[data-theme="light"] .agr{
+  --bg:#f1f5f9; --card:#ffffff; --card2:#f8fafc; --line:#cbd5e1;
+  --txt:#0f172a; --mut:#475569; --gold:#ca8a04;
+  --ok:#16a34a; --warn:#d97706; --teal:#0d9488; --field:#f1f5f9;
+}
+:root[data-theme="light"] .inv .chips button:not(.on):not(.sec-edit-chip),
+:root[data-theme="light"] .inv .seg button:not(.on),
+:root[data-theme="light"] .agr .seg button:not(.on),
+:root[data-theme="light"] .inv .badge:not(.off){color:#334155}
+:root[data-theme="light"] .inv .ico{color:#a16207}
+:root[data-theme="light"] .inv .stock.zero{background:rgba(185,28,28,.12);color:#b91c1c}
+:root[data-theme="light"] .inv .btn-del,
+:root[data-theme="light"] .inv .p-btn.del,
+:root[data-theme="light"] .agr .p-btn.del,
+:root[data-theme="light"] .agr .err,
+:root[data-theme="light"] .agr .calc .neg{color:#b91c1c}
+:root[data-theme="light"] .inv .toast,
+:root[data-theme="light"] .agr .toast{background:#fff}
+
+/* fondo de la página con el shell activo: sigue el tema (sustituye al body.sh-activo anterior) */
+html body.sh-activo,
+html[data-theme="light"] body.sh-activo{
+  background:var(--surface) !important;
+}
 }

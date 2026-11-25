@@ -22,6 +22,12 @@ type
     CamUsd: Double;     // variación en CUP respecto a hace ~24 h
     CamEur: Double;
     CamMlc: Double;
+           EfUsd: Double;      // tasa que usa la app (la de Ajustes si la fijaste a mano)
+    EfEur: Double;
+    EfMlc: Double;
+    ManUsd: Boolean;    // esa moneda usa la tasa manual de Ajustes
+    ManEur: Boolean;
+    ManMlc: Boolean;
   end;
 
   TTasas = class
@@ -34,7 +40,7 @@ type
 implementation
 
 uses
-  uConfig;
+  uConfig, uAjustes;
 
 const
   FUNCION_TASAS = '/functions/v1/super-task';
@@ -133,6 +139,35 @@ begin
     Result.CamMlc := Result.Mlc - Double(Ayer['MLC']);
   end;
 end;
+ // Aplica Ajustes: en modo manual sustituye las tasas por las definidas a mano
+// Usd/Eur/Mlc quedan siempre con la tasa de elToque; Ef* es la que usa la app
+procedure AplicarAjustes(T: TTasasCup);
+begin
+  T.EfUsd := T.Usd;
+  T.EfEur := T.Eur;
+  T.EfMlc := T.Mlc;
+  T.ManUsd := False;
+  T.ManEur := False;
+  T.ManMlc := False;
+  if not TAjustes.UsarToque then
+  begin
+    if TAjustes.MonedaActiva('usd') and (TAjustes.TasaManual('usd') > 0) then
+    begin
+      T.EfUsd := TAjustes.TasaManual('usd');
+      T.ManUsd := True;
+    end;
+    if TAjustes.MonedaActiva('eur') and (TAjustes.TasaManual('eur') > 0) then
+    begin
+      T.EfEur := TAjustes.TasaManual('eur');
+      T.ManEur := True;
+    end;
+    if TAjustes.MonedaActiva('mlc') and (TAjustes.TasaManual('mlc') > 0) then
+    begin
+      T.EfMlc := TAjustes.TasaManual('mlc');
+      T.ManMlc := True;
+    end;
+  end;
+end;
 
 class function TTasas.Guardada: TTasasCup;
 var
@@ -151,6 +186,7 @@ begin
     Result.Origen := 'ejemplo';
     Result.HayCambio := False;
   end;
+  AplicarAjustes(Result);
 end;
 
 class function TTasas.Consultar: TTasasCup;
@@ -158,6 +194,7 @@ var
   Res, Dato: TJSObject;
   Estado: Integer;
 begin
+
   Res := await(TJSObject, TasasFetch(SB_URL + FUNCION_TASAS, SB_KEY, MS_CONSULTA));
   Estado := Integer(Res['status']);
   if (Estado >= 200) and (Estado < 300) then
@@ -167,6 +204,7 @@ begin
     begin
       GuardarTasas(Dato);
       Result := ADe(Dato, 'toque');
+      AplicarAjustes(Result);
       Exit;
     end;
     console.log('uTasas: la respuesta no trae tasas válidas: ' + string(Res['body']));

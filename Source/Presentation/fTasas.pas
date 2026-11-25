@@ -4,24 +4,10 @@ interface
 
 uses
   System.SysUtils, System.Classes, JS, Web, WEBLib.Graphics, WEBLib.Controls,
-  WEBLib.Forms, WEBLib.Dialogs, Vcl.Controls, Vcl.StdCtrls, WEBLib.StdCtrls,
-  WEBLib.WebCtrls;
+  WEBLib.Forms, WEBLib.Dialogs;
 
 type
   TForm7 = class(TWebForm)
-    tsAtras: TWebButton;
-    tsEur: TWebHTMLDiv;
-    tsTEur: TWebHTMLSpan;
-    lblInicial: TWebHTMLDiv;
-    tsToast: TWebHTMLDiv;
-    tsUsd: TWebHTMLDiv;
-    tsToastTxt: TWebHTMLSpan;
-    tsBtn: TWebButton;
-    tsChips: TWebHTMLDiv;
-    tsTUsd: TWebHTMLSpan;
-    tsMlc: TWebHTMLDiv;
-    tsTMlc: TWebHTMLSpan;
-    tsMonto: TWebSpinEdit;
     procedure WebFormCreate(Sender: TObject);
   end;
 
@@ -33,10 +19,10 @@ implementation
 {$R *.dfm}
 
 uses
-  uShell, uNavegacion, uTasas;
+  uShell, uNavegacion, uTasas, uAjustes;
 
 var
-  GUsd, GEur, GMlc: Double;
+  GUsd, GEur, GMlc: Double;     // las tasas que usa el conversor (las de Ajustes si las fijaste)
 
 function El(const Id: string): TJSElement;
 begin
@@ -125,12 +111,28 @@ begin
   end;
 end;
 
+// "Tú la tomas en X CUP" cuando la moneda está fijada a mano en Ajustes
+procedure PonerNota(const Id: string; Manual: Boolean; Valor: Double);
+var
+  E: TJSElement;
+begin
+  E := El(Id);
+  if Manual then
+  begin
+    E.innerHTML := 'Tú la tomas en <b>' + Fmt(Valor, 2) + ' CUP</b> · configurado en Ajustes';
+    E.removeAttribute('hidden');
+  end
+  else
+    E.setAttribute('hidden', '');
+end;
+
 procedure Pintar(T: TTasasCup);
 begin
-  GUsd := T.Usd;
-  GEur := T.Eur;
-  GMlc := T.Mlc;
+  GUsd := T.EfUsd;
+  GEur := T.EfEur;
+  GMlc := T.EfMlc;
 
+  // las tarjetas muestran siempre la tasa de elToque
   El('tsUsd').innerHTML := Fmt(T.Usd, 2) + '<small>CUP</small>';
   El('tsEur').innerHTML := Fmt(T.Eur, 2) + '<small>CUP</small>';
   El('tsMlc').innerHTML := Fmt(T.Mlc, 2) + '<small>CUP</small>';
@@ -138,6 +140,10 @@ begin
   PonerTendencia('tsTUsd', T.CamUsd, T.HayCambio);
   PonerTendencia('tsTEur', T.CamEur, T.HayCambio);
   PonerTendencia('tsTMlc', T.CamMlc, T.HayCambio);
+
+  PonerNota('tsNotaUsd', T.ManUsd, T.EfUsd);
+  PonerNota('tsNotaEur', T.ManEur, T.EfEur);
+  PonerNota('tsNotaMlc', T.ManMlc, T.EfMlc);
 
   if T.Origen = 'toque' then
     El('tsFuente').innerHTML := 'Fuente: elToque · en línea'
@@ -174,10 +180,29 @@ begin
   end;
 end;
 
+// Marca en el conversor la moneda predeterminada de Ajustes
+procedure ElegirBase;
+var
+  Base: string;
+begin
+  Base := TAjustes.MonedaBase;
+  asm
+    document.querySelectorAll('#tsChips .ts-chip').forEach(function (c) {
+      c.classList.toggle('sel', c.getAttribute('data-mon') === Base);
+    });
+  end;
+end;
+
 function AlClicActualizar(Event: TJSEvent): Boolean;
 begin
   Result := True;
   Actualizar(True);
+end;
+
+function AlCalcular(Event: TJSEvent): Boolean;
+begin
+  Result := True;
+  Calcular;
 end;
 
 function AlClicChip(Event: TJSEvent): Boolean;
@@ -190,11 +215,6 @@ begin
       b.classList.add('sel');
     }
   end;
-  Calcular;
-end;
-function AlCalcular(Event: TJSEvent): Boolean;
-begin
-  Result := True;
   Calcular;
 end;
 
@@ -212,12 +232,12 @@ begin
   TNavegacion.Registrar(Self);
   TShell.Activar('mas');                 // marca "Más" en el menú inferior
 
-  // las opciones se cargan aquí para no depender de la plantilla
-   El('tsChips').addEventListener('click', @AlClicChip);
   El('tsBtn').addEventListener('click', @AlClicActualizar);
   El('tsMonto').addEventListener('input', @AlCalcular);
+  El('tsChips').addEventListener('click', @AlClicChip);
   El('tsAtras').addEventListener('click', @AlClicAtras);
 
+  ElegirBase;
   Pintar(TTasas.Guardada);               // sale al instante con lo guardado (sirve offline)
   Actualizar(False);                     // y consulta en segundo plano
 end;

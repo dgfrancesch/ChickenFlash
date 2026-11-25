@@ -20,29 +20,32 @@
   </div>
 
   <section class="ts-rates">
-    <article class="ts-card">
+    <article class="ts-card" id="tsCardUsd">
       <div class="ts-card-top">
         <span class="ts-tag"><span class="ts-dot usd">$</span>USD</span>
         <span class="ts-trend" id="tsTUsd" hidden></span>
       </div>
       <div class="ts-val" id="tsUsd">—</div>
       <div class="ts-sub">Dólar estadounidense</div>
+       <div class="ts-nota" id="tsNotaUsd" hidden></div>   <!-- en la tarjeta USD -->
     </article>
-    <article class="ts-card">
+    <article class="ts-card" id="tsCardEur">
       <div class="ts-card-top">
         <span class="ts-tag"><span class="ts-dot eur">€</span>EUR</span>
         <span class="ts-trend" id="tsTEur" hidden></span>
       </div>
       <div class="ts-val" id="tsEur">—</div>
-      <div class="ts-sub">Euro (ECU en elToque)</div>
+      <div class="ts-sub">Euro</div>
+       <div class="ts-nota" id="tsNotaEur" hidden></div>   <!-- en la tarjeta EUR -->
     </article>
-    <article class="ts-card ts-wide">
+    <article class="ts-card ts-wide" id="tsCardMlc">
       <div class="ts-card-top">
         <span class="ts-tag"><span class="ts-dot mlc">M</span>MLC</span>
         <span class="ts-trend" id="tsTMlc" hidden></span>
       </div>
       <div class="ts-val" id="tsMlc">—</div>
       <div class="ts-sub">Moneda Libremente Convertible</div>
+       <div class="ts-nota" id="tsNotaMlc" hidden></div>   <!-- en la tarjeta MLC -->
     </article>
   </section>
 

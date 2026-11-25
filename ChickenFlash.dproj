@@ -155,6 +155,11 @@
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
         <DCCReference Include="Source\Infraestructure\uAjustes.pas"/>
+        <DCCReference Include="Source\Presentation\fAjustes.pas">
+            <Form>Form8</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -251,6 +256,7 @@
         <None Include="Css\secciones.css"/>
         <None Include="Css\cobrar.css"/>
         <None Include="Css\tasas.css"/>
+        <None Include="Css\ajustes.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -478,6 +484,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Css\addProduct.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\ajustes.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
