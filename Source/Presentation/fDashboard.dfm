@@ -5,9 +5,8 @@ object Form2: TForm2
   object lblVentaAviso: TWebLabel
     Left = 202
     Top = 30
-    Width = 71
+    Width = 87
     Height = 15
-    Caption = 'lblVentaAviso'
     ElementID = 'lblVentaAviso'
     ElementFont = efCSS
     ElementPosition = epIgnore

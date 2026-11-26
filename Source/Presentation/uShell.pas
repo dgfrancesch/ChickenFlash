@@ -116,6 +116,7 @@ begin
       <symbol id="sh-ajustes" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
       <symbol id="sh-salir" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></symbol>
       <symbol id="sh-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+      <symbol id="sh-deuda" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></symbol>
       </svg>
 
       <nav class="sh-nav" aria-label="Navegación">
@@ -136,8 +137,7 @@ begin
       <button class="sh-x" type="button" data-accion="cerrar" aria-label="Cerrar"><svg class="sh-i"><use href="#sh-close"/></svg></button>
       </header>
       <div class="sh-lado-menu">
-      <button class="sh-item" type="button" data-destino="deudas"><svg class="sh-i"><use href="#sh-reporte"/></svg><span>Deudas</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
-      <button class="sh-item" type="button" data-destino="historial"><svg class="sh-i"><use href="#sh-historial"/></svg><span>Historial de ventas</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
+     <button class="sh-item" type="button" data-destino="deudas"><svg class="sh-i"><use href="#sh-deuda"/></svg><span>Deudas</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button><button class="sh-item" type="button" data-destino="historial"><svg class="sh-i"><use href="#sh-historial"/></svg><span>Historial de ventas</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
       <button class="sh-item" type="button" data-destino="tasas"><svg class="sh-i"><use href="#sh-tasa"/></svg><span>Tasas de cambio</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
             <button class="sh-item" type="button" data-destino="conteo"><svg class="sh-i"><use href="#sh-conteo"/></svg><span>Conteo de billetes</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>
       <button class="sh-item" type="button" data-destino="reportes"><svg class="sh-i"><use href="#sh-reporte"/></svg><span>Reportes</span><svg class="sh-i sh-chev"><use href="#sh-chevron"/></svg></button>

@@ -170,6 +170,12 @@
             <FormType>dfm</FormType>
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
+        <DCCReference Include="Source\Presentation\fDeudas.pas">
+            <Form>Form11</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Source\Domain\Services\uDeudasService.pas"/>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -269,6 +275,7 @@
         <None Include="Css\ajustes.css"/>
         <None Include="Css\historial.css"/>
         <None Include="Css\conteo.css"/>
+        <None Include="Css\deudas.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -520,6 +527,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Css\dashboard.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\deudas.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
