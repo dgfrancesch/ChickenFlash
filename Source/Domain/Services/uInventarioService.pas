@@ -6,6 +6,8 @@ uses
   System.SysUtils, JS, Web, uHttp;
 
 type
+  TPesos = array of Double;
+
   TSeccion = class
   public
     Id: Integer;
@@ -46,10 +48,25 @@ type
     Items: array of TProducto;
   end;
 
-  TResultado = class
+  TJaba = class
+  public
+    Id: Integer;
+    ProductoId: Integer;
+    Peso: Double;
+  end;
+
+  TResultadoJabas = class
   public
     Ok: Boolean;
     Error: string;
+    Items: array of TJaba;
+  end;
+
+  TResultado = class
+  public
+    Ok: Boolean;
+    Error: string;              // si Ok = True y Error <> '' es un aviso (ej. fallaron las jabas)
+    Id: Integer;                // id del producto creado
   end;
 
   TResultadoFoto = class
@@ -73,6 +90,8 @@ type
     Visible: Boolean;
     FotoUrl: string;            // foto nueva ya subida ('' = no cambia)
     QuitarFoto: Boolean;        // al editar: dejar el producto sin foto
+    Jabas: TPesos;              // pesos de las jabas (solo si TipoVenta = 'lb')
+    TocarJabas: Boolean;        // False = no modificar las jabas guardadas
   end;
 
   TInventarioService = class
@@ -101,6 +120,15 @@ type
     class function SubirFoto(Archivo: TJSObject): TResultadoFoto;
     [async]
     class function BorrarFoto(const Url: string): TResultado;
+    // jabas: ProductoId = 0 devuelve las disponibles de todos los productos
+    [async]
+    class function CargarJabas(ProductoId: Integer): TResultadoJabas;
+    // reemplaza las jabas NO vendidas del producto por esta lista
+    [async]
+    class function GuardarJabas(ProductoId: Integer; Pesos: TPesos): TResultado;
+    // Ids = '12,15,18'
+    [async]
+    class function MarcarJabasVendidas(const Ids: string): TResultado;
   end;
 
 implementation
@@ -125,6 +153,13 @@ var
 begin
   if Decimales = 3 then F := 1000 else F := 100;
   Result := Round(V * F) / F;
+end;
+
+function UrlEnc(const S: string): string;
+begin
+  asm
+    Result = encodeURIComponent(S);
+  end;
 end;
 
 // Los campos vacíos de la BD llegan como null: se leen como '' o 0
@@ -473,25 +508,78 @@ end;
 class function TInventarioService.CrearProducto(P: TProductoNuevo): TResultado;
 var
   R: TApiResponse;
+  Arr: TJSArray;
+  Nuevo: Integer;
+  RJ: TResultado;
 begin
   Result := TResultado.Create;
   R := await(TApiResponse, THttp.Send('POST', '/rest/v1/productos',
     ArmarJson(P, False), Token));
-  Result.Ok := R.Ok;
   if not R.Ok then
+  begin
     Result.Error := MensajeError(R);
+    Exit;
+  end;
+  Result.Ok := True;
+
+  // sin jabas no hay nada más que hacer
+  if (P.TipoVenta <> 'lb') or (Length(P.Jabas) = 0) then Exit;
+
+  // necesitamos el id del producto recién creado para colgarle las jabas
+  Nuevo := 0;
+  if Copy(Trim(R.Body), 1, 1) = '[' then
+  begin
+    Arr := TJSArray(TJSJSON.parse(R.Body));
+    if Arr.length > 0 then
+      Nuevo := Integer(TJSObject(Arr[0])['id']);
+  end;
+  if Nuevo = 0 then
+  begin
+    R := await(TApiResponse, THttp.Send('GET',
+      '/rest/v1/productos?select=id&seccion_id=eq.' + IntToStr(P.SeccionId)
+      + '&nombre=eq.' + UrlEnc(Trim(P.Nombre)) + '&order=id.desc&limit=1', '', Token));
+    if R.Ok then
+    begin
+      Arr := TJSArray(TJSJSON.parse(R.Body));
+      if Arr.length > 0 then
+        Nuevo := Integer(TJSObject(Arr[0])['id']);
+    end;
+  end;
+  Result.Id := Nuevo;
+
+  if Nuevo = 0 then
+  begin
+    Result.Error := 'Producto guardado, pero no se pudieron guardar las jabas. Edítalo y agrégalas.';
+    Exit;
+  end;
+  RJ := await(TResultado, GuardarJabas(Nuevo, P.Jabas));
+  if not RJ.Ok then
+    Result.Error := 'Producto guardado, pero fallaron las jabas. Edítalo y agrégalas.';
 end;
 
 class function TInventarioService.ActualizarProducto(Id: Integer; P: TProductoNuevo): TResultado;
 var
   R: TApiResponse;
+  RJ: TResultado;
 begin
   Result := TResultado.Create;
   R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
     ArmarJson(P, True), Token));
-  Result.Ok := R.Ok;
   if not R.Ok then
+  begin
     Result.Error := MensajeError(R);
+    Exit;
+  end;
+  Result.Ok := True;
+  Result.Id := Id;
+
+  // las jabas solo se tocan en productos por libra y si la pantalla las cargó bien
+  if (P.TipoVenta = 'lb') and P.TocarJabas then
+  begin
+    RJ := await(TResultado, GuardarJabas(Id, P.Jabas));
+    if not RJ.Ok then
+      Result.Error := 'Producto actualizado, pero fallaron las jabas. Vuelve a editarlo.';
+  end;
 end;
 
 class function TInventarioService.ActualizarStock(Id: Integer; Stock: Double): TResultado;
@@ -503,6 +591,105 @@ begin
   O := TJSObject.new;
   O['stock'] := Stock;
   R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
+    TJSJSON.stringify(O), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
+end;
+
+{ ---------- jabas ---------- }
+
+class function TInventarioService.CargarJabas(ProductoId: Integer): TResultadoJabas;
+var
+  R: TApiResponse;
+  Arr: TJSArray;
+  Obj: TJSObject;
+  J: TJaba;
+  i: Integer;
+  Filtro: string;
+begin
+  Result := TResultadoJabas.Create;
+  Filtro := '&vendida=eq.false';
+  if ProductoId > 0 then
+    Filtro := Filtro + '&producto_id=eq.' + IntToStr(ProductoId);
+  R := await(TApiResponse, THttp.Send('GET',
+    '/rest/v1/jabas?select=id,producto_id,peso' + Filtro + '&order=producto_id.asc,id.asc',
+    '', Token));
+  if not R.Ok then
+  begin
+    Result.Error := MensajeError(R);
+    Exit;
+  end;
+
+  Arr := TJSArray(TJSJSON.parse(R.Body));
+  SetLength(Result.Items, Arr.length);
+  for i := 0 to Arr.length - 1 do
+  begin
+    Obj := TJSObject(Arr[i]);
+    J := TJaba.Create;
+    J.Id := Integer(Obj['id']);
+    J.ProductoId := Integer(Obj['producto_id']);
+    J.Peso := NumeroJS(Obj['peso']);
+    Result.Items[i] := J;
+  end;
+  Result.Ok := True;
+end;
+
+class function TInventarioService.GuardarJabas(ProductoId: Integer; Pesos: TPesos): TResultado;
+var
+  R: TApiResponse;
+  Arr: TJSArray;
+  O: TJSObject;
+  i: Integer;
+begin
+  Result := TResultado.Create;
+
+  // se borran solo las que siguen sin vender; las vendidas quedan como historial
+  R := await(TApiResponse, THttp.Send('DELETE',
+    '/rest/v1/jabas?producto_id=eq.' + IntToStr(ProductoId) + '&vendida=eq.false',
+    '', Token));
+  if not R.Ok then
+  begin
+    Result.Error := MensajeError(R);
+    Exit;
+  end;
+
+  if Length(Pesos) = 0 then
+  begin
+    Result.Ok := True;
+    Exit;
+  end;
+
+  Arr := TJSArray.new;
+  for i := 0 to High(Pesos) do
+  begin
+    O := TJSObject.new;
+    O['producto_id'] := ProductoId;
+    O['peso'] := Redondear(Pesos[i], 3);
+    Arr.push(O);
+  end;
+  R := await(TApiResponse, THttp.Send('POST', '/rest/v1/jabas',
+    TJSJSON.stringify(Arr), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
+end;
+
+class function TInventarioService.MarcarJabasVendidas(const Ids: string): TResultado;
+var
+  O: TJSObject;
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  if Ids = '' then
+  begin
+    Result.Ok := True;
+    Exit;
+  end;
+  O := TJSObject.new;
+  O['vendida'] := True;
+  R := await(TApiResponse, THttp.Send('PATCH',
+    '/rest/v1/jabas?id=in.(' + Ids + ')&vendida=eq.false',
     TJSJSON.stringify(O), Token));
   Result.Ok := R.Ok;
   if not R.Ok then

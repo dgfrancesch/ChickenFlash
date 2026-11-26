@@ -5,7 +5,7 @@ interface
 uses
   System.SysUtils, System.Classes, JS, Web, WEBLib.Graphics, WEBLib.Controls,
   WEBLib.Forms, WEBLib.Dialogs, WEBLib.StdCtrls, Vcl.Controls, WEBLib.ExtCtrls,
-  Vcl.StdCtrls, WEBLib.WebCtrls;
+  Vcl.StdCtrls, WEBLib.WebCtrls, uInventarioService;
 
 type
   TForm4 = class(TWebForm)
@@ -61,6 +61,8 @@ type
     FFotoNueva: string;     // URL de esa foto una vez subida (por si falla el guardado y se reintenta)
     FFotoUrl: string;       // foto que ya tenía el producto (al editar)
     FQuitarFoto: Boolean;   // se quitó la foto que tenía
+    FJabas: TPesos;         // pesos de las jabas (solo productos por libra)
+    FJabasListas: Boolean;  // False = no se pudieron cargar las jabas guardadas: no tocarlas
     [async]
     procedure CargarParaEditar;
     procedure PonerVisible(Si: Boolean);
@@ -79,6 +81,9 @@ type
     procedure MostrarError(const Msg: string);
     procedure OcultarError;
     procedure Ocupado(Si: Boolean);
+    procedure AgregarJaba;
+    procedure QuitarJaba(I: Integer);
+    procedure PintarJabas;
   public
   end;
 
@@ -88,23 +93,36 @@ var
 implementation
 
 uses
-  uShell, uNavegacion, uInventarioService, uDom;
+  uShell, uNavegacion, uDom;
 
 {$R *.dfm}
 
 { ---------- utilidades ---------- }
 
-function Num(El: TJSElement): Double;
+function SumaPesos(const A: TPesos): Double;
+var
+  i: Integer;
 begin
-  Result := StrToFloatDef(string(TJSHTMLInputElement(El).value), 0);
+  Result := 0;
+  for i := 0 to High(A) do
+    Result := Result + A[i];
+end;
+
+function Num(El: TJSElement): Double;
+var
+  S: string;
+begin
+  S := string(TJSHTMLInputElement(El).value);
+  asm
+    Result = parseFloat(String(S).replace(',', '.')) || 0;
+  end;
 end;
 
 procedure PonerNum(El: TJSElement; V: Double);
 begin
-  if V = 0 then
-    TJSHTMLInputElement(El).value := ''
-  else
-    TJSHTMLInputElement(El).value := Numero(V, 3);
+  asm
+    El.value = (V === 0) ? '' : String(Math.round(V * 1000) / 1000);
+  end;
 end;
 
 function Cup(V: Double): string;
@@ -135,7 +153,7 @@ begin
   end;
 end;
 
-// Un solo clic para las secciones y las sugerencias (se crean por código)
+// Un solo clic para las secciones, las sugerencias y las jabas (se crean por código)
 function AlClicAgregar(Event: TJSEvent): Boolean;
 var
   El: TJSElement;
@@ -149,6 +167,20 @@ begin
   if El <> nil then
   begin
     Pantalla.MarcarSeccion(StrToIntDef(string(El.getAttribute('data-sec')), 0));
+    Exit;
+  end;
+
+  El := Ancestro(TJSElement(Event.target), '[data-addjaba]');
+  if El <> nil then
+  begin
+    Pantalla.AgregarJaba;
+    Exit;
+  end;
+
+  El := Ancestro(TJSElement(Event.target), '[data-deljaba]');
+  if El <> nil then
+  begin
+    Pantalla.QuitarJaba(StrToIntDef(string(El.getAttribute('data-deljaba')), -1));
     Exit;
   end;
 
@@ -190,6 +222,7 @@ begin
 
   FEditId := TShell.EditarId;
   TShell.EditarId := 0;
+  FJabasListas := (FEditId = 0);   // al crear no hay jabas guardadas que proteger
   if FEditId > 0 then
   begin
     document.querySelector('#divAgregar .who b').textContent := 'Editar producto';
@@ -207,11 +240,13 @@ begin
   btnAddCambiarFoto.OnClick := btnAddFotoClick;
   btnAddQuitarFoto.OnClick := btnAddQuitarFotoClick;
 
-  PonerUnidad('lb');
-  Recalcular;
+  // los eventos se activan antes de nada, para que la pantalla responda siempre
   divAgregar.ElementHandle.addEventListener('click', @AlClicAgregar);
   divAgregar.ElementHandle.addEventListener('input', @AlEscribirAgregar);
   document.getElementById('edtAddFoto').addEventListener('change', @AlElegirFoto);
+
+  PonerUnidad('lb');
+  Recalcular;
   CargarSecciones;
 end;
 
@@ -256,6 +291,7 @@ end;
 procedure TForm4.CargarParaEditar;
 var
   RP: TResultadoProductos;
+  RJ: TResultadoJabas;
   P: TProducto;
   i: Integer;
 begin
@@ -296,6 +332,23 @@ begin
   if P.FotoUrl <> '' then
     PonerVistaUrl(P.FotoUrl);
   Recalcular;
+
+  // jabas que siguen sin vender (solo productos por libra)
+  if P.TipoVenta <> 'peso' then
+  begin
+    FJabasListas := True;          // no tenía jabas: nada que proteger
+    Exit;
+  end;
+  RJ := await(TResultadoJabas, TInventarioService.CargarJabas(FEditId));
+  if RJ.Ok then
+  begin
+    SetLength(FJabas, Length(RJ.Items));
+    for i := 0 to High(RJ.Items) do
+      FJabas[i] := RJ.Items[i].Peso;
+    FJabasListas := True;
+    PintarJabas;
+  end;
+  // si falla, FJabasListas queda en False y al guardar no se tocan las jabas
 end;
 
 procedure TForm4.MarcarSeccion(Id: Integer);
@@ -314,6 +367,9 @@ begin
 end;
 
 procedure TForm4.PonerUnidad(const Tipo: string);
+var
+  El: TJSElement;
+  PasoStock: string;
 begin
   FUnidad := Tipo;
   PonerClase(btnAddUniLb.ElementHandle, 'on', Tipo = 'lb');
@@ -321,6 +377,21 @@ begin
   PonerClase(btnAddUniU.ElementHandle, 'on', Tipo = 'u');
   lblUnidad.ElementHandle.textContent := Tipo;
   Mostrar(divPaquete.ElementHandle, Tipo = 'paq');
+  El := document.getElementById('divJabas');
+  if El <> nil then
+    Mostrar(El, Tipo = 'lb');
+
+  // el spin sube de 0.1 en 0.1 en libras, y de 1 en 1 en paquetes/unidades
+  if Tipo = 'lb' then
+    PasoStock := '0.1'
+  else
+    PasoStock := '1';
+  asm
+    var s = document.getElementById('edtAddStock');
+    if (s) s.setAttribute('step', PasoStock);
+    var j = document.getElementById('edtJabaPeso');
+    if (j) j.setAttribute('step', '0.1');
+  end;
 end;
 
 procedure TForm4.PonerLibras(const Valor: string);
@@ -344,6 +415,71 @@ begin
   ElNeto.textContent := Cup(Neto);
   PonerClase(ElNeto, 'ok', Neto >= 0);
   PonerClase(ElNeto, 'neg', Neto < 0);
+end;
+
+{ ---------- jabas ---------- }
+
+procedure TForm4.AgregarJaba;
+var
+  Inp: TJSElement;
+  V: Double;
+begin
+  Inp := document.getElementById('edtJabaPeso');
+  if Inp = nil then Exit;
+  V := Num(Inp);
+  if V <= 0 then
+  begin
+    MostrarError('Escribe el peso de la jaba.');
+    Exit;
+  end;
+  OcultarError;
+  SetLength(FJabas, Length(FJabas) + 1);
+  FJabas[High(FJabas)] := V;
+  TJSHTMLInputElement(Inp).value := '';
+  PintarJabas;
+  PonerNum(edtAddStock.ElementHandle, SumaPesos(FJabas));   // el stock = total de jabas
+end;
+
+procedure TForm4.QuitarJaba(I: Integer);
+var
+  k: Integer;
+begin
+  if (I < 0) or (I > High(FJabas)) then Exit;
+  for k := I to High(FJabas) - 1 do
+    FJabas[k] := FJabas[k + 1];
+  SetLength(FJabas, Length(FJabas) - 1);
+  PintarJabas;
+  PonerNum(edtAddStock.ElementHandle, SumaPesos(FJabas));   // el stock = total de jabas
+end;
+
+procedure TForm4.PintarJabas;
+var
+  Html: string;
+  Total: Double;
+  i: Integer;
+  Lista, Resumen: TJSElement;
+begin
+  Lista := document.getElementById('divJabaLista');
+  Resumen := document.getElementById('lblJabaTotal');
+  if (Lista = nil) or (Resumen = nil) then Exit;
+
+  Html := '';
+  Total := 0;
+  for i := 0 to High(FJabas) do
+  begin
+    Total := Total + FJabas[i];
+    Html := Html + '<button type="button" data-deljaba="' + IntToStr(i) + '">'
+      + Numero(FJabas[i], 3) + ' lb &times;</button>';
+  end;
+  Lista.innerHTML := Html;
+  if Length(FJabas) = 0 then
+    Resumen.textContent := ''
+  else
+    Resumen.textContent := IntToStr(Length(FJabas)) + ' jabas - ' + Numero(Total, 3) + ' lb';
+
+    // al crear, el stock se llena con la suma (editable); al editar no se toca
+  if (FEditId = 0) and (Length(FJabas) > 0) then
+    PonerNum(edtAddStock.ElementHandle, Total);
 end;
 
 { ---------- foto ---------- }
@@ -465,6 +601,8 @@ begin
   P.Visible := FVisible;
   P.FotoUrl := '';
   P.QuitarFoto := FQuitarFoto;
+  P.Jabas := FJabas;
+  P.TocarJabas := FJabasListas;
 
   if P.SeccionId = 0 then
   begin
@@ -515,7 +653,7 @@ begin
   end;
   P.FotoUrl := FFotoNueva;
 
-  // 2) el producto
+  // 2) el producto (y sus jabas)
   if FEditId > 0 then
     R := await(TResultado, TInventarioService.ActualizarProducto(FEditId, P))
   else
@@ -528,7 +666,9 @@ begin
     // la foto vieja ya no sirve si se cambió o se quitó
     if (FFotoUrl <> '') and ((P.FotoUrl <> '') or FQuitarFoto) then
       TInventarioService.BorrarFoto(FFotoUrl);
-    if FEditId > 0 then
+    if R.Error <> '' then
+      TShell.Aviso := R.Error                    // producto guardado pero fallaron las jabas
+    else if FEditId > 0 then
       TShell.Aviso := 'Producto actualizado'
     else
       TShell.Aviso := 'Producto guardado en inventario';

@@ -26,6 +26,8 @@ type
     FSecciones: array of TSeccion;
     FProductos: array of TProducto;
     FQ: array of Double;          // cantidad en la venta de cada producto (mismo orden que FProductos)
+    FJabas: array of TJaba;       // jabas disponibles (sin vender) de todos los productos
+    FJabaSel: array of Boolean;   // jaba elegida para la venta (mismo orden que FJabas)
     FSeccionId: Integer;          // 0 = todas las secciones
     FBusqueda: string;            // texto buscado, sin tildes y en minúsculas
     [async]
@@ -34,6 +36,14 @@ type
     procedure CargarVentasHoy;
     function IndiceDe(Id: Integer): Integer;
     function TonoDe(SeccionId: Integer): Integer;
+    function TieneJabas(ProductoId: Integer): Boolean;
+    function IndiceJaba(Id: Integer): Integer;
+    function CuentaJabas(ProductoId: Integer; SoloElegidas: Boolean): Integer;
+    procedure RecalcularJabas(ProductoId: Integer);
+    procedure LimpiarJabas(ProductoId: Integer);
+    procedure AlternarJaba(Id: Integer);
+    procedure ElegirJaba(ProductoId, Clave: Integer);
+    procedure PonerJabas(Card: TJSElement; ProductoId: Integer);
     procedure PintarFiltros;
     procedure AgregarChip(const Nombre: string; Id: Integer);
     procedure MarcarFiltros;
@@ -162,6 +172,24 @@ begin
     Exit;
   end;
 
+  // chip de peso: se agrega una jaba de ese peso a la venta
+  El := Ancestro(TJSElement(Event.target), '[data-jabaw]');
+  if El <> nil then
+  begin
+    TForm2(TShell.Actual).ElegirJaba(
+      StrToIntDef(string(El.getAttribute('data-prod')), 0),
+      StrToIntDef(string(El.getAttribute('data-jabaw')), 0));
+    Exit;
+  end;
+
+  // papelera de una jaba en la venta actual
+  El := Ancestro(TJSElement(Event.target), '[data-jaba]');
+  if El <> nil then
+  begin
+    TForm2(TShell.Actual).AlternarJaba(StrToIntDef(string(El.getAttribute('data-jaba')), 0));
+    Exit;
+  end;
+
   El := Ancestro(TJSElement(Event.target), '[data-accion]');
   if El = nil then Exit;
   Fila := Ancestro(El, '[data-id]');
@@ -266,6 +294,7 @@ procedure TForm2.Cargar;
 var
   RS: TResultadoSecciones;
   RP: TResultadoProductos;
+  RJ: TResultadoJabas;
   i: Integer;
 begin
   divProductos.ElementHandle.innerHTML :=
@@ -289,11 +318,24 @@ begin
     Exit;
   end;
 
+  // jabas disponibles (si falla, los productos se venden por libra normal)
+  RJ := await(TResultadoJabas, TInventarioService.CargarJabas(0));
+  if TShell.Actual <> Self then Exit;
+
   FSecciones := RS.Items;
   FProductos := RP.Items;
   SetLength(FQ, Length(FProductos));
   for i := 0 to High(FQ) do
     FQ[i] := 0;
+
+  if RJ.Ok then
+    FJabas := RJ.Items
+  else
+    SetLength(FJabas, 0);
+  SetLength(FJabaSel, Length(FJabas));
+  for i := 0 to High(FJabaSel) do
+    FJabaSel[i] := False;
+
   FSeccionId := 0;
   RestaurarVenta;                              // si vuelves desde Cobrar, la venta sigue armada
   PintarFiltros;
@@ -307,7 +349,7 @@ var
   Txt: string;
   Venta, Item: TJSObject;
   Items: TJSArray;
-  j, k: Integer;
+  j, k, m: Integer;
   V: Double;
 begin
   asm
@@ -322,6 +364,22 @@ begin
       Item := TJSObject(Items[j]);
       k := IndiceDe(Integer(Item['id']));
       if k < 0 then Continue;
+
+      // producto con jabas: cada línea es una jaba elegida
+      if TieneJabas(FProductos[k].Id) then
+      begin
+        if not (isNull(Item['jaba_id']) or isUndefined(Item['jaba_id'])) then
+        begin
+          m := IndiceJaba(Integer(Item['jaba_id']));
+          if m >= 0 then
+          begin
+            FJabaSel[m] := True;
+            RecalcularJabas(FProductos[k].Id);
+          end;
+        end;
+        Continue;
+      end;
+
       V := Double(Item['cantidad']);
       if V > FProductos[k].Stock then V := FProductos[k].Stock;
       if V > 0 then FQ[k] := V;
@@ -365,6 +423,167 @@ begin
       Result := (i mod 4) + 1;
       Exit;
     end;
+end;
+
+{ ---------- jabas ---------- }
+
+function TForm2.TieneJabas(ProductoId: Integer): Boolean;
+var
+  j: Integer;
+begin
+  Result := False;
+  for j := 0 to High(FJabas) do
+    if FJabas[j].ProductoId = ProductoId then
+    begin
+      Result := True;
+      Exit;
+    end;
+end;
+
+function TForm2.IndiceJaba(Id: Integer): Integer;
+var
+  j: Integer;
+begin
+  Result := -1;
+  for j := 0 to High(FJabas) do
+    if FJabas[j].Id = Id then
+    begin
+      Result := j;
+      Exit;
+    end;
+end;
+
+function TForm2.CuentaJabas(ProductoId: Integer; SoloElegidas: Boolean): Integer;
+var
+  j: Integer;
+begin
+  Result := 0;
+  for j := 0 to High(FJabas) do
+    if (FJabas[j].ProductoId = ProductoId) and ((not SoloElegidas) or FJabaSel[j]) then
+      Inc(Result);
+end;
+
+// La cantidad del producto es la suma de los pesos de las jabas elegidas
+procedure TForm2.RecalcularJabas(ProductoId: Integer);
+var
+  j, k: Integer;
+  Suma: Double;
+begin
+  k := IndiceDe(ProductoId);
+  if k < 0 then Exit;
+  Suma := 0;
+  for j := 0 to High(FJabas) do
+    if (FJabas[j].ProductoId = ProductoId) and FJabaSel[j] then
+      Suma := Suma + FJabas[j].Peso;
+  FQ[k] := Round(Suma * 1000) / 1000;
+end;
+
+// ProductoId = 0: todas
+procedure TForm2.LimpiarJabas(ProductoId: Integer);
+var
+  j, k: Integer;
+begin
+  for j := 0 to High(FJabas) do
+    if (ProductoId = 0) or (FJabas[j].ProductoId = ProductoId) then
+    begin
+      FJabaSel[j] := False;
+      k := IndiceDe(FJabas[j].ProductoId);
+      if k >= 0 then FQ[k] := 0;
+    end;
+end;
+
+// Quita (o pone) una jaba concreta: se usa desde la papelera de la venta actual
+procedure TForm2.AlternarJaba(Id: Integer);
+var
+  j: Integer;
+begin
+  j := IndiceJaba(Id);
+  if j < 0 then Exit;
+  FJabaSel[j] := not FJabaSel[j];
+  RecalcularJabas(FJabas[j].ProductoId);
+  Repintar;
+end;
+
+// Agrega a la venta la primera jaba libre de ese peso (Clave = peso x 1000)
+procedure TForm2.ElegirJaba(ProductoId, Clave: Integer);
+var
+  j: Integer;
+begin
+  for j := 0 to High(FJabas) do
+    if (FJabas[j].ProductoId = ProductoId) and (not FJabaSel[j])
+      and (Round(FJabas[j].Peso * 1000) = Clave) then
+    begin
+      FJabaSel[j] := True;
+      RecalcularJabas(ProductoId);
+      Repintar;
+      Exit;
+    end;
+end;
+
+// Chips de la tarjeta: un chip por peso, con cuántas quedan. Se ven 4 y el resto en scroll.
+// Cuando ya no queda ninguna de ese peso, el chip desaparece.
+procedure TForm2.PonerJabas(Card: TJSElement; ProductoId: Integer);
+var
+  Ctl: TJSElement;
+  Claves, Cuentas: array of Integer;
+  j, k, n, Clave, Hallado, Tmp: Integer;
+  Html, Texto: string;
+begin
+  Ctl := Card.querySelector('.db-ctl');
+  if Ctl = nil then Exit;
+
+  SetLength(Claves, 0);
+  SetLength(Cuentas, 0);
+  for j := 0 to High(FJabas) do
+  begin
+    if (FJabas[j].ProductoId <> ProductoId) or FJabaSel[j] then Continue;
+    Clave := Round(FJabas[j].Peso * 1000);
+    Hallado := -1;
+    for k := 0 to High(Claves) do
+      if Claves[k] = Clave then Hallado := k;
+    if Hallado < 0 then
+    begin
+      SetLength(Claves, Length(Claves) + 1);
+      SetLength(Cuentas, Length(Cuentas) + 1);
+      Hallado := High(Claves);
+      Claves[Hallado] := Clave;
+      Cuentas[Hallado] := 0;
+    end;
+    Inc(Cuentas[Hallado]);
+  end;
+
+  // de menor a mayor peso
+  for n := 0 to High(Claves) - 1 do
+    for k := 0 to High(Claves) - 1 - n do
+      if Claves[k] > Claves[k + 1] then
+      begin
+        Tmp := Claves[k];
+        Claves[k] := Claves[k + 1];
+        Claves[k + 1] := Tmp;
+        Tmp := Cuentas[k];
+        Cuentas[k] := Cuentas[k + 1];
+        Cuentas[k + 1] := Tmp;
+      end;
+
+  if Length(Claves) = 0 then
+  begin
+    Ctl.innerHTML := '<small>Todas las jabas están en la venta</small>';
+    Exit;
+  end;
+
+  // 2 columnas, alto para 2 filas (4 chips); si hay más, se desliza
+  Html := '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;'
+    + 'max-height:84px;overflow-y:auto;align-content:start">';
+  for k := 0 to High(Claves) do
+  begin
+    Texto := Numero(Claves[k] / 1000, 3) + ' lb';
+    if Cuentas[k] > 1 then
+      Texto := Texto + ' &times;' + IntToStr(Cuentas[k]);
+    Html := Html + '<button class="db-chip" type="button" data-prod="' + IntToStr(ProductoId)
+      + '" data-jabaw="' + IntToStr(Claves[k]) + '">' + Texto + '</button>';
+  end;
+  Html := Html + '</div>';
+  Ctl.innerHTML := Html;
 end;
 
 { ---------- filtros ---------- }
@@ -426,6 +645,7 @@ var
   Card, Ph, Chip: TJSElement;
   Quedan: Double;
   Precio: string;
+  ConJabas: Boolean;
 begin
   divProductos.ElementHandle.innerHTML := '';
   N := 0;
@@ -436,6 +656,8 @@ begin
     if (FSeccionId <> 0) and (P.SeccionId <> FSeccionId) then Continue;
     if (FBusqueda <> '') and (Pos(FBusqueda, Normalizar(P.Nombre)) = 0) then Continue;
 
+    ConJabas := (P.TipoVenta = 'peso') and TieneJabas(P.Id);
+
     Card := Clonar('tplProducto');
     Card.setAttribute('data-id', IntToStr(P.Id));
     Ph := Card.querySelector('.db-ph');
@@ -443,12 +665,18 @@ begin
     PonerFoto(Ph, P.FotoUrl);
     PonerTexto(Card, '.db-un', UnidadDe(P));
     PonerTexto(Card, '.db-nombre', P.Nombre);
-    PonerTexto(Card, '.db-detalle', DetalleDe(P));
+    if ConJabas then
+      PonerTexto(Card, '.db-detalle', 'Por jaba - elige las que vas a vender')
+    else
+      PonerTexto(Card, '.db-detalle', DetalleDe(P));
 
     // El stock es el real de la BD: no baja al armar la venta, solo cuando se completa
     Quedan := Round(P.Stock * 1000) / 1000;
     if Quedan <= 0 then
       PonerTexto(Card, '.db-stock', 'Agotado')
+    else if ConJabas then
+      PonerTexto(Card, '.db-stock', 'Quedan ' + Numero(Quedan, 3) + ' lb - '
+        + IntToStr(CuentaJabas(P.Id, False)) + ' jabas')
     else
       PonerTexto(Card, '.db-stock', 'Quedan ' + Numero(Quedan, 3) + ' ' + UnidadDe(P));
     Chip := Card.querySelector('.db-stock');
@@ -460,7 +688,10 @@ begin
       Precio := Precio + '/lb';
     PonerTexto(Card, '.db-precio', Precio);
 
-    PonerControl(Card, FQ[i], P.Stock > 0);
+    if ConJabas then
+      PonerJabas(Card, P.Id)
+    else
+      PonerControl(Card, FQ[i], P.Stock > 0);
     divProductos.ElementHandle.appendChild(Card);
     Inc(N);
   end;
@@ -474,20 +705,22 @@ end;
 
 procedure TForm2.PintarVenta;
 var
-  i, N: Integer;
-  K: Integer;
+  i, j, k, N: Integer;
   Total: Double;
   Lista, Linea, El: TJSElement;
   Filas: TJSNodeList;
   Titulo, Html: string;
 begin
-  // 1) Conteo, total y estado del panel (no depende de ninguna plantilla)
+  // 1) Conteo (una línea por jaba elegida, una por producto normal), total y estado del panel
   N := 0;
   Total := 0;
   for i := 0 to High(FProductos) do
     if FQ[i] > 0 then
     begin
-      Inc(N);
+      if TieneJabas(FProductos[i].Id) then
+        N := N + CuentaJabas(FProductos[i].Id, True)
+      else
+        Inc(N);
       Total := Total + FQ[i] * FProductos[i].Precio;
     end;
 
@@ -531,25 +764,42 @@ begin
     for i := 0 to High(FProductos) do
     begin
       if FQ[i] <= 0 then Continue;
-      Html := Html +
-        '<div class="db-linea" data-id="' + IntToStr(FProductos[i].Id) + '">' +
-        '<div class="db-linea-n"><b class="db-nombre">' + Esc(FProductos[i].Nombre) + '</b>' +
-        '<small class="db-subtotal">' + Miles(FQ[i] * FProductos[i].Precio) + ' CUP</small></div>' +
-        '<div class="db-ctl"></div>' +
-        '<button class="db-del" type="button" data-accion="quitar" aria-label="Quitar de la venta">' +
-        '<svg class="db-i"><use href="#ic-trash"/></svg></button></div>';
+
+      if TieneJabas(FProductos[i].Id) then
+      begin
+        // una línea por jaba, con su propia papelera
+        for j := 0 to High(FJabas) do
+          if FJabaSel[j] and (FJabas[j].ProductoId = FProductos[i].Id) then
+            Html := Html +
+              '<div class="db-linea">' +
+              '<div class="db-linea-n"><b class="db-nombre">' + Esc(FProductos[i].Nombre)
+              + ' - jaba ' + Numero(FJabas[j].Peso, 3) + ' lb</b>' +
+              '<small class="db-subtotal">' + Miles(FJabas[j].Peso * FProductos[i].Precio)
+              + ' CUP</small></div>' +
+              '<div class="db-ctl"></div>' +
+              '<button class="db-del" type="button" data-jaba="' + IntToStr(FJabas[j].Id)
+              + '" aria-label="Quitar jaba">' +
+              '<svg class="db-i"><use href="#ic-trash"/></svg></button></div>';
+      end
+      else
+        Html := Html +
+          '<div class="db-linea" data-id="' + IntToStr(FProductos[i].Id) + '">' +
+          '<div class="db-linea-n"><b class="db-nombre">' + Esc(FProductos[i].Nombre) + '</b>' +
+          '<small class="db-subtotal">' + Miles(FQ[i] * FProductos[i].Precio) + ' CUP</small></div>' +
+          '<div class="db-ctl"></div>' +
+          '<button class="db-del" type="button" data-accion="quitar" aria-label="Quitar de la venta">' +
+          '<svg class="db-i"><use href="#ic-trash"/></svg></button></div>';
     end;
     Lista.innerHTML := Html;
 
-    // el selector de cantidad de cada linea, en el mismo orden
-    Filas := Lista.querySelectorAll('.db-linea');
-    K := 0;
-    for i := 0 to High(FProductos) do
+    // el selector de cantidad solo en las líneas normales (las de jaba no lo llevan)
+    Filas := Lista.querySelectorAll('.db-linea[data-id]');
+    for k := 0 to Filas.length - 1 do
     begin
-      if FQ[i] <= 0 then Continue;
-      Linea := TJSElement(Filas.item(K));
-      Inc(K);
-      if Linea <> nil then
+      Linea := TJSElement(Filas.item(k));
+      if Linea = nil then Continue;
+      i := IndiceDe(StrToIntDef(string(Linea.getAttribute('data-id')), 0));
+      if i >= 0 then
         PonerControl(Linea, FQ[i], True);
     end;
 
@@ -591,6 +841,17 @@ begin
   i := IndiceDe(Id);
   if i < 0 then Exit;
 
+  // productos con jabas: lo único que se hace aquí es quitarlos de la venta
+  if TieneJabas(Id) then
+  begin
+    if Accion = 'quitar' then
+    begin
+      LimpiarJabas(Id);
+      Repintar;
+    end;
+    Exit;
+  end;
+
   if Accion = 'mas' then
   begin
     V := R2(FQ[i] + Paso(FProductos[i]));
@@ -616,6 +877,7 @@ var
 begin
   i := IndiceDe(Id);
   if i < 0 then Exit;
+  if TieneJabas(Id) then Exit;             // con jabas la cantidad sale de las jabas elegidas
 
   if Valor <= 0 then
     Valor := 0
@@ -640,15 +902,17 @@ var
 begin
   for i := 0 to High(FQ) do
     FQ[i] := 0;
+  LimpiarJabas(0);
   Repintar;
 end;
 
 // Guarda la venta armada en sessionStorage ('venta') y va a la pantalla #/cobrar
+// Con jabas: una línea por cada jaba elegida (cantidad = peso, jaba_id = la jaba)
 procedure TForm2.btnCobrarClick(Sender: TObject);
 var
   Items: TJSArray;
   Item, Venta: TJSObject;
-  i: Integer;
+  i, j: Integer;
   Total: Double;
 begin
   Items := TJSArray.new;
@@ -656,6 +920,25 @@ begin
   for i := 0 to High(FProductos) do
   begin
     if FQ[i] <= 0 then Continue;
+
+    if TieneJabas(FProductos[i].Id) then
+    begin
+      for j := 0 to High(FJabas) do
+        if FJabaSel[j] and (FJabas[j].ProductoId = FProductos[i].Id) then
+        begin
+          Item := TJSObject.new;
+          Item['id'] := FProductos[i].Id;
+          Item['nombre'] := FProductos[i].Nombre + ' (jaba ' + Numero(FJabas[j].Peso, 3) + ' lb)';
+          Item['unidad'] := 'lb';
+          Item['cantidad'] := FJabas[j].Peso;
+          Item['precio'] := FProductos[i].Precio;
+          Item['jaba_id'] := FJabas[j].Id;
+          Items.push(Item);
+          Total := Total + FJabas[j].Peso * FProductos[i].Precio;
+        end;
+      Continue;
+    end;
+
     Item := TJSObject.new;
     Item['id'] := FProductos[i].Id;
     Item['nombre'] := FProductos[i].Nombre;

@@ -52,9 +52,10 @@ type
   private
     FSecciones: array of TSeccion;
     FProductos: array of TProducto;
+    FJabas: array of TJaba;       // jabas disponibles (sin vender) de todos los productos
     FSeccionId: Integer;          // 0 = todas las secciones
     FFiltroKpi: string;           // '' = ninguno, 'activos' o 'bajo'
-        FBusqueda: string;            // texto buscado, sin tildes y en minúsculas
+    FBusqueda: string;            // texto buscado, sin tildes y en minúsculas
     procedure edtInvBuscarChange(Sender: TObject);
     [async]
     procedure Cargar;
@@ -67,8 +68,9 @@ type
     procedure AlternarKpi(const Filtro: string);
     function Coincide(P: TProducto): Boolean;
     function NombreSeccion(Id: Integer): string;
+    function JabasDe(ProductoId: Integer): Integer;
     procedure MostrarAviso(const Msg: string);
-        [async]
+    [async]
     procedure AjustarStock(Id: Integer; Valor: Double; Relativo: Boolean);
   public
   end;
@@ -115,9 +117,9 @@ begin
     Result := '<svg class="i"><use href="#i-box"></use></svg>';
 end;
 
-function TarjetaProducto(P: TProducto; const Seccion: string): string;
+function TarjetaProducto(P: TProducto; const Seccion: string; Jabas: Integer): string;
 var
-  ClaseItem, ClaseStock, Insignias: string;
+  ClaseItem, ClaseStock, Insignias, TextoStock: string;
 begin
   ClaseItem := 'item';
   Insignias := '';
@@ -132,19 +134,24 @@ begin
   ClaseStock := 'stock';
   if P.Stock <= 0 then
     ClaseStock := 'stock zero'
-    else if TAjustes.StockBajo(P.Stock) then
+  else if TAjustes.StockBajo(P.Stock) then
     ClaseStock := 'stock low';
+
+  // productos por libra con jabas: se muestra también cuántas jabas quedan
+  TextoStock := 'Stock: ' + Numero(P.Stock, 3) + ' ' + UnidadDe(P);
+  if (P.TipoVenta = 'peso') and (Jabas > 0) then
+    TextoStock := TextoStock + ' - ' + IntToStr(Jabas) + ' jabas';
 
   Result :=
     '<div class="' + ClaseItem + '" data-id="' + IntToStr(P.Id) + '">' +
       '<div class="item-top">' +
-                '<div class="ico">' + IconoDe(P) + '</div>' +
+        '<div class="ico">' + IconoDe(P) + '</div>' +
         '<div class="info">' +
           '<div class="title-row"><b>' + Esc(P.Nombre) + '</b>' + Insignias + '</div>' +
           '<div class="meta">' + Esc(DetalleDe(P)) + '</div>' +
           '<div class="price-row">' +
             '<span class="price">' + Numero(P.Precio, 2) + ' CUP</span>' +
-            '<span class="' + ClaseStock + '">Stock: ' + Numero(P.Stock, 3) + ' ' + UnidadDe(P) + '</span>' +
+            '<span class="' + ClaseStock + '">' + TextoStock + '</span>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -195,6 +202,7 @@ function AlCambiarLista(Event: TJSEvent): Boolean;
 var
   Inp, Item: TJSElement;
   Txt: string;
+  Valor: Double;
 begin
   Result := True;
   Inp := Ancestro(TJSElement(Event.target), 'input[data-accion="cantidad"]');
@@ -202,10 +210,13 @@ begin
   Item := Ancestro(Inp, '.item[data-id]');
   if Item = nil then Exit;
   if not (TShell.Actual is TForm3) then Exit;
-  Txt := StringReplace(string(TJSHTMLInputElement(Inp).value), ',', '.', []);
+  Txt := string(TJSHTMLInputElement(Inp).value);
+  asm
+    Valor = parseFloat(String(Txt).replace(',', '.')) || 0;
+  end;
   TForm3(TShell.Actual).AjustarStock(
     StrToIntDef(string(Item.getAttribute('data-id')), 0),
-    StrToFloatDef(Txt, 0), False);
+    Valor, False);
 end;
 
 function AlClicFiltros(Event: TJSEvent): Boolean;
@@ -225,7 +236,7 @@ begin
   El := Ancestro(TJSElement(Event.target), '#btnTodos');
   if El <> nil then
     TForm3(TShell.Actual).FiltrarSeccion(0);
-      El := Ancestro(TJSElement(Event.target), '#btnEditarSecciones');
+  El := Ancestro(TJSElement(Event.target), '#btnEditarSecciones');
   if El <> nil then
     TNavegacion.IrARuta('secciones');
 end;
@@ -261,10 +272,10 @@ begin
   btnAgregar.OnClick := btnAgregarClick;
   btnKpiActivos.OnClick := btnKpiActivosClick;
   btnKpiBajo.OnClick := btnKpiBajoClick;
-    edtInvBuscar.OnChange := edtInvBuscarChange;
+  edtInvBuscar.OnChange := edtInvBuscarChange;
   divInvFiltros.ElementHandle.addEventListener('click', @AlClicFiltros);
-    divLista.ElementHandle.addEventListener('click', @AlClicLista);
-      divLista.ElementHandle.addEventListener('change', @AlCambiarLista);
+  divLista.ElementHandle.addEventListener('click', @AlClicLista);
+  divLista.ElementHandle.addEventListener('change', @AlCambiarLista);
   QuitarFoco;                                  // que el buscador no quede enfocado
   Cargar;
 end;
@@ -273,6 +284,7 @@ procedure TForm3.Cargar;
 var
   RS: TResultadoSecciones;
   RP: TResultadoProductos;
+  RJ: TResultadoJabas;
 begin
   divLista.ElementHandle.innerHTML := '<div class="empty">Cargando productos...</div>';
 
@@ -292,8 +304,16 @@ begin
     Exit;
   end;
 
+  // jabas disponibles (si falla, la lista se ve igual, solo sin el número de jabas)
+  RJ := await(TResultadoJabas, TInventarioService.CargarJabas(0));
+  if TShell.Actual <> Self then Exit;
+
   FSecciones := RS.Items;
   FProductos := RP.Items;
+  if RJ.Ok then
+    FJabas := RJ.Items
+  else
+    SetLength(FJabas, 0);
   FSeccionId := 0;
   FFiltroKpi := '';
   PintarSecciones;
@@ -301,6 +321,16 @@ begin
   MarcarKpis;
   PintarKpis;
   PintarLista;
+end;
+
+function TForm3.JabasDe(ProductoId: Integer): Integer;
+var
+  j: Integer;
+begin
+  Result := 0;
+  for j := 0 to High(FJabas) do
+    if FJabas[j].ProductoId = ProductoId then
+      Inc(Result);
 end;
 
 procedure TForm3.PintarSecciones;
@@ -365,11 +395,12 @@ begin
   if FFiltroKpi = 'activos' then
     Result := P.Visible
   else if FFiltroKpi = 'bajo' then
-        Result := P.Visible and TAjustes.StockBajo(P.Stock);
+    Result := P.Visible and TAjustes.StockBajo(P.Stock);
   if not Result then Exit;
   if FBusqueda <> '' then
     Result := Pos(FBusqueda, Normalizar(P.Nombre)) > 0;
 end;
+
 procedure TForm3.edtInvBuscarChange(Sender: TObject);
 begin
   FBusqueda := Normalizar(Trim(edtInvBuscar.Text));
@@ -415,7 +446,7 @@ begin
   begin
     P := FProductos[i];
     if not Coincide(P) then Continue;
-    Html := Html + TarjetaProducto(P, NombreSeccion(P.SeccionId));
+    Html := Html + TarjetaProducto(P, NombreSeccion(P.SeccionId), JabasDe(P.Id));
     Inc(N);
   end;
 
@@ -495,7 +526,7 @@ begin
   ElTxtBajo := document.getElementById('lblKpiBajoTxt');
   if ElActivos <> nil then ElActivos.textContent := IntToStr(Activos);
   if ElBajo <> nil then ElBajo.textContent := IntToStr(Bajos);
-    if ElTxtBajo <> nil then
+  if ElTxtBajo <> nil then
     ElTxtBajo.textContent := 'Stock bajo (' + #$2264 + ' ' +
       IntToStr(TAjustes.LimiteStock) + ')';
 end;

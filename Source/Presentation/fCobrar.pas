@@ -353,14 +353,16 @@ begin
           g('cbMsg').textContent = 'A\u00fan faltan ' + fa(-c.diff) + ' CUP para completar el pago.';
           return;
         }
-        var items = [], falta = false;
+                var items = [], falta = false;
         for (var i = 0; i < VENTA.items.length; i++) {
           var it = VENTA.items[i];
           var pid = it.producto_id || it.id;
           var pr = it.precio_cup != null ? it.precio_cup : it.precio;
           if (!pid || pr == null) { falta = true; break; }
-          items.push({ producto_id: Number(pid), nombre: it.nombre,
-                       cantidad: Number(it.cantidad), precio_cup: Number(pr) });
+          var o = { producto_id: Number(pid), nombre: it.nombre,
+                    cantidad: Number(it.cantidad), precio_cup: Number(pr) };
+          if (it.jaba_id != null) { o.jaba_id = Number(it.jaba_id); }
+          items.push(o);
         }
         if (falta) {
           g('cbMsg').textContent = 'Faltan producto_id o precio en la venta. Hay que guardarlos desde el dashboard.';
