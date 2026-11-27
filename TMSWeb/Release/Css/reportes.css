@@ -6,13 +6,14 @@
   --rp-mut:#5b6b86;--rp-gold:#ca8a04;--rp-ok:#16a34a;--rp-warn:#ea580c;--rp-teal:#0d9488;--rp-field:#e8edf5}
 .rp,.rp *{box-sizing:border-box}
 .rp [hidden]{display:none!important}
-.rp button{font:inherit;color:inherit;border:0;padding:0;cursor:pointer;background:none}
+:where(.rp) button{font:inherit;color:inherit;border:0;padding:0;cursor:pointer;background:none}
 .rp-i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .rp-box{max-width:480px;margin:0 auto;padding:16px 16px 104px;display:flex;flex-direction:column;gap:12px}
 .rp-load .rp-kpis,.rp-load .rp-card{opacity:.55;transition:opacity .15s}
 
-.rp-top{display:flex;align-items:center;gap:12px}
-.rp-back{width:40px;height:40px;border-radius:50%;background:var(--rp-card);border:1px solid var(--rp-line);display:grid;place-items:center;flex:none}
+.rp-top{display:flex;align-items:center;gap:14px}
+.rp-back{width:44px;height:44px;border-radius:50%;background:var(--rp-card);border:1px solid var(--rp-line);color:var(--rp-txt);display:grid;place-items:center;flex:none}
+.rp-back .rp-i{width:22px;height:22px}
 .rp-who{flex:1;min-width:0}
 .rp-who b{display:block;font-size:17px;line-height:1.2}
 .rp-who small{color:var(--rp-mut);font-size:12px}
