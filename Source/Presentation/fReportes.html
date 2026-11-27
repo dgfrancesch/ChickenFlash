@@ -1,0 +1,85 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <title>Reportes Chicken Flash</title>
+    <style>
+    </style>
+  </head>
+  <body>
+<div class="rp" id="rp">
+ <div class="rp-box">
+  <header class="rp-top">
+    <button class="rp-back" id="rpBack" type="button" aria-label="Atr&aacute;s"><svg class="rp-i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="rp-who"><b>Reportes</b><small>Chicken Flash &middot; Resumen del negocio</small></div>
+    <span class="rp-net" id="rpNet">En l&iacute;nea</span>
+  </header>
+
+  <div class="rp-aviso" id="rpAviso" hidden></div>
+
+  <div class="rp-seg" id="rpSeg">
+    <button type="button" data-p="hoy">Hoy</button>
+    <button type="button" class="on" data-p="semana">7 d&iacute;as</button>
+    <button type="button" data-p="mes">Este mes</button>
+  </div>
+
+  <div class="rp-kpis">
+    <div class="rp-kpi"><small>Ventas totales</small><b class="g" id="rpSales">0 CUP</b><span class="rp-delta" id="rpDelta"></span></div>
+    <div class="rp-kpi"><small>Ganancia estimada</small><b class="ok" id="rpProfit">0 CUP</b><span class="rp-delta" id="rpMargin"></span></div>
+  </div>
+
+  <section class="rp-card">
+    <div class="rp-head"><h2>Ventas por secci&oacute;n</h2><span id="rpSecTotal">0 CUP</span></div>
+    <div class="rp-bars" id="rpSecBars"></div>
+  </section>
+
+  <section class="rp-card">
+    <div class="rp-head"><h2>M&eacute;todos de cobro</h2><span id="rpTickets">0 ventas</span></div>
+    <div class="rp-grid" id="rpPay"></div>
+  </section>
+
+  <section class="rp-card">
+    <div class="rp-head">
+      <h2>Productos</h2>
+      <div class="rp-tabs" id="rpTabs">
+        <button type="button" class="on" data-m="top">M&aacute;s vendidos</button>
+        <button type="button" data-m="low">Poca salida</button>
+      </div>
+    </div>
+    <div class="rp-list" id="rpProd"></div>
+  </section>
+
+  <section class="rp-card">
+    <div class="rp-head"><h2>Productos por agotarse</h2><span>Seg&uacute;n ritmo actual</span></div>
+    <div class="rp-list" id="rpStock"></div>
+  </section>
+
+  <section class="rp-card">
+    <div class="rp-head"><h2>Margen real por producto</h2><span>Ganancia limpia</span></div>
+    <div class="rp-list" id="rpMarg"></div>
+  </section>
+
+  <section class="rp-card">
+    <div class="rp-head"><h2>Deudores m&aacute;s morosos</h2><span id="rpMorTotal"></span></div>
+    <div class="rp-list" id="rpMor"></div>
+    <a class="rp-more" href="#/deudas">Ver todas las deudas</a>
+  </section>
+
+  <section class="rp-card">
+    <div class="rp-head"><h2>Invertido en almac&eacute;n</h2><span>Costo del stock</span></div>
+    <div class="rp-grid" id="rpInv"></div>
+  </section>
+
+  <section class="rp-card">
+    <div class="rp-head"><h2>Ganancia del almac&eacute;n</h2><span>Al vender todo</span></div>
+    <div class="rp-grid" id="rpInvProfit"></div>
+  </section>
+
+  <section class="rp-card">
+    <div class="rp-head"><h2>Ventas por administrador</h2><span>Seg&uacute;n per&iacute;odo</span></div>
+    <div class="rp-list" id="rpAdmin"></div>
+  </section>
+ </div>
+</div>
+  </body>
+</html>

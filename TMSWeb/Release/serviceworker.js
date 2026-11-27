@@ -28,6 +28,7 @@ var CACHED_URLS = [
   "Css/deudas.css",
   "Css/historial.css",
   "Css/Inventario.css",
+  "Css/reportes.css",
   "Css/secciones.css",
   "Css/tasas.css",
   "Css/uShell.css",
@@ -44,6 +45,7 @@ var CACHED_URLS = [
   "Source/Presentation/fHistorial.html",
   "Source/Presentation/fInventory.html",
   "Source/Presentation/fLogin.html",
+  "Source/Presentation/fReportes.html",
   "Source/Presentation/fSecciones.html",
   "Source/Presentation/fTasas.html",
   "styles.css"

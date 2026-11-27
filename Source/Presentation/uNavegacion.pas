@@ -21,7 +21,7 @@ implementation
 
 uses
   uShell, uAjustes, fDashboard, fInventory, fAddProduct, fSecciones, fCobrar,
-  fTasas, fAjustes, fHistorial, fConteo, fDeudas;
+  fTasas, fAjustes, fHistorial, fConteo, fDeudas,fReportes;
 
 function ClasePorRuta(const ARuta: string): TWebFormClass;
 begin
@@ -45,6 +45,8 @@ begin
     Result := TForm10
   else if ARuta = 'deudas' then
     Result := TForm11
+      else if ARuta = 'reportes' then
+    Result := TForm12
   else
     Result := nil;
 end;

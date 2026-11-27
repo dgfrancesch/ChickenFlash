@@ -176,6 +176,12 @@
             <DesignClass>TWebForm</DesignClass>
         </DCCReference>
         <DCCReference Include="Source\Domain\Services\uDeudasService.pas"/>
+        <DCCReference Include="Source\Presentation\fReportes.pas">
+            <Form>Form12</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TWebForm</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Source\Domain\Services\uReportesService.pas"/>
         <None Include="index.html"/>
         <None Include="Manifest.json"/>
         <None Include="serviceworker.js"/>
@@ -276,6 +282,7 @@
         <None Include="Css\conteo.css"/>
         <None Include="Css\deudas.css"/>
         <None Include="Css\secciones.css"/>
+        <None Include="Css\reportes.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -539,6 +546,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Css\historial.css" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Css\reportes.css" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

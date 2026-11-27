@@ -28,7 +28,9 @@ uses
   fHistorial in 'Source\Presentation\fHistorial.pas' {Form9: TWebForm} {*.html},
   fConteo in 'Source\Presentation\fConteo.pas' {Form10: TWebForm} {*.html},
   fDeudas in 'Source\Presentation\fDeudas.pas' {Form11: TWebForm} {*.html},
-  uDeudasService in 'Source\Domain\Services\uDeudasService.pas';
+  uDeudasService in 'Source\Domain\Services\uDeudasService.pas',
+  fReportes in 'Source\Presentation\fReportes.pas' {Form12: TWebForm} {*.html},
+  uReportesService in 'Source\Domain\Services\uReportesService.pas';
 
 {$R *.res}
 
