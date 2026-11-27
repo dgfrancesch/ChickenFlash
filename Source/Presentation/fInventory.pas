@@ -69,6 +69,7 @@ type
     function Coincide(P: TProducto): Boolean;
     function NombreSeccion(Id: Integer): string;
     function JabasDe(ProductoId: Integer): Integer;
+    function ConJabas(Id: Integer): Boolean;
     procedure MostrarAviso(const Msg: string);
     [async]
     procedure AjustarStock(Id: Integer; Valor: Double; Relativo: Boolean);
@@ -119,7 +120,7 @@ end;
 
 function TarjetaProducto(P: TProducto; const Seccion: string; Jabas: Integer): string;
 var
-  ClaseItem, ClaseStock, Insignias, TextoStock: string;
+  ClaseItem, ClaseStock, Insignias, TextoStock, SoloLectura: string;
 begin
   ClaseItem := 'item';
   Insignias := '';
@@ -137,10 +138,15 @@ begin
   else if TAjustes.StockBajo(P.Stock) then
     ClaseStock := 'stock low';
 
-  // productos por libra con jabas: se muestra también cuántas jabas quedan
+  // productos por libra con jabas: se muestra también cuántas jabas quedan,
+  // y el cuadro de cantidad es solo de lectura (los + / - abren el editor)
   TextoStock := 'Stock: ' + Numero(P.Stock, 3) + ' ' + UnidadDe(P);
+  SoloLectura := '';
   if (P.TipoVenta = 'peso') and (Jabas > 0) then
+  begin
     TextoStock := TextoStock + ' - ' + IntToStr(Jabas) + ' jabas';
+    SoloLectura := ' readonly';
+  end;
 
   Result :=
     '<div class="' + ClaseItem + '" data-id="' + IntToStr(P.Id) + '">' +
@@ -160,7 +166,7 @@ begin
           '<span class="stock-lbl">Ajustar:</span>' +
           '<div class="pill">' +
             '<button class="rb" type="button" data-accion="menos" aria-label="Quitar"><svg class="i"><use href="#i-minus"></use></svg></button>' +
-            '<input class="q" type="text" inputmode="decimal" data-accion="cantidad" value="' + Numero(P.Stock, 3) + '" aria-label="Cantidad">' +
+            '<input class="q" type="text" inputmode="decimal" data-accion="cantidad" value="' + Numero(P.Stock, 3) + '" aria-label="Cantidad"' + SoloLectura + '>' +
             '<button class="rb g" type="button" data-accion="mas" aria-label="Agregar"><svg class="i"><use href="#i-plus"></use></svg></button>' +
           '</div>' +
         '</div>' +
@@ -191,10 +197,19 @@ begin
     TNavegacion.IrARuta('agregar');
   end
   else if not (TShell.Actual is TForm3) then Exit
-  else if Accion = 'mas' then
-    TForm3(TShell.Actual).AjustarStock(Id, 1, True)
-  else if Accion = 'menos' then
-    TForm3(TShell.Actual).AjustarStock(Id, -1, True);
+  else if (Accion = 'mas') or (Accion = 'menos') then
+  begin
+    if TForm3(TShell.Actual).ConJabas(Id) then
+    begin
+      // con jabas el stock se cambia agregando o quitando jabas: se abre el editor
+      TShell.EditarId := Id;
+      TNavegacion.IrARuta('agregar');
+    end
+    else if Accion = 'mas' then
+      TForm3(TShell.Actual).AjustarStock(Id, 1, True)
+    else
+      TForm3(TShell.Actual).AjustarStock(Id, -1, True);
+  end;
 end;
 
 // Al escribir una cantidad a mano en el cuadro del medio
@@ -333,6 +348,20 @@ begin
       Inc(Result);
 end;
 
+// Producto por libra que tiene jabas disponibles
+function TForm3.ConJabas(Id: Integer): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := 0 to High(FProductos) do
+    if FProductos[i].Id = Id then
+    begin
+      Result := (FProductos[i].TipoVenta = 'peso') and (JabasDe(Id) > 0);
+      Exit;
+    end;
+end;
+
 procedure TForm3.PintarSecciones;
 var
   Html: string;
@@ -434,6 +463,7 @@ begin
   AlternarKpi('bajo');
 end;
 
+// Primero los productos con stock y al final los agotados
 procedure TForm3.PintarLista;
 var
   Html: string;
@@ -442,7 +472,7 @@ var
 begin
   Html := '';
   N := 0;
-    for Pasada := 0 to 1 do
+  for Pasada := 0 to 1 do
     for i := 0 to High(FProductos) do
     begin
       P := FProductos[i];
@@ -462,6 +492,7 @@ begin
   divLista.ElementHandle.innerHTML := Html;
 end;
 
+// Relativo: Valor = +1 / -1 (un "paso"). Por libra el paso es 0,5; paquetes y unidades 1.
 procedure TForm3.AjustarStock(Id: Integer; Valor: Double; Relativo: Boolean);
 var
   P: TProducto;
@@ -475,9 +506,20 @@ begin
       P := FProductos[i];
   if P = nil then Exit;
 
+  // con jabas el stock no se toca desde aquí (se cambia en el editor)
+  if ConJabas(Id) then
+  begin
+    PintarLista;
+    Exit;
+  end;
+
   Anterior := P.Stock;
   if Relativo then
-    Nuevo := P.Stock + Valor
+  begin
+    if P.TipoVenta = 'peso' then
+      Valor := Valor * 0.5;
+    Nuevo := P.Stock + Valor;
+  end
   else
     Nuevo := Valor;
   if Nuevo < 0 then Nuevo := 0;

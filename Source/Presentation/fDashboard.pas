@@ -200,10 +200,12 @@ begin
 end;
 
 // Cantidad escrita a mano
+// Cantidad escrita a mano (acepta 2.5 y 2,5)
 function AlCambiarDash(Event: TJSEvent): Boolean;
 var
   Inp, Fila: TJSElement;
   Txt: string;
+  Valor: Double;
 begin
   Result := True;
   if not (TShell.Actual is TForm2) then Exit;
@@ -211,12 +213,14 @@ begin
   if Inp = nil then Exit;
   Fila := Ancestro(Inp, '[data-id]');
   if Fila = nil then Exit;
-  Txt := StringReplace(string(TJSHTMLInputElement(Inp).value), ',', '.', [rfReplaceAll]);
+  Txt := string(TJSHTMLInputElement(Inp).value);
+  asm
+    Valor = parseFloat(String(Txt).replace(',', '.')) || 0;
+  end;
   TForm2(TShell.Actual).FijarCantidad(
     StrToIntDef(string(Fila.getAttribute('data-id')), 0),
-    StrToFloatDef(Txt, 0));
+    Valor);
 end;
-
 // Texto del buscador
 function AlEscribirDash(Event: TJSEvent): Boolean;
 var

@@ -269,13 +269,13 @@
         <None Include="Css\uShell.css"/>
         <None Include="Css\Inventario.css"/>
         <None Include="Css\addProduct.css"/>
-        <None Include="Css\secciones.css"/>
         <None Include="Css\cobrar.css"/>
         <None Include="Css\tasas.css"/>
         <None Include="Css\ajustes.css"/>
         <None Include="Css\historial.css"/>
         <None Include="Css\conteo.css"/>
         <None Include="Css\deudas.css"/>
+        <None Include="Css\secciones.css"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
