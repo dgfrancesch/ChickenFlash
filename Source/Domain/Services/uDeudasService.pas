@@ -20,6 +20,13 @@ type
     Restante: Double;  // saldo que queda en CUP (0 = deuda saldada)
   end;
 
+    TResultadoDeudor = class
+  public
+    Ok: Boolean;
+    Error: string;
+    Id: Integer;
+  end;
+
   TDeudasService = class
   public
     // Deudores con sus deudas, productos y abonos (función deudores_con_saldo)
@@ -29,6 +36,8 @@ type
     // PagosJson: [{"metodo":"efectivo","moneda":"CUP","monto":500,"tasa_cup":1}, ...]
     [async]
     class function Pagar(DeudaId: Integer; const PagosJson: string): TResultadoPago;
+        [async]
+    class function Crear(const Nombre, Telefono, Nota: string): TResultadoDeudor;
   end;
 
 implementation
@@ -93,6 +102,37 @@ begin
       403: Result.Error := 'No tienes permiso para cobrar deudas.';
     else
       Result.Error := 'No se pudo registrar el pago (' + IntToStr(R.Status) + ').';
+    end;
+end;
+
+class function TDeudasService.Crear(const Nombre, Telefono, Nota: string): TResultadoDeudor;
+var
+  R: TApiResponse;
+  O: TJSObject;
+begin
+  Result := TResultadoDeudor.Create;
+  O := TJSObject.new;
+  O['p_nombre'] := Nombre;
+  O['p_telefono'] := Telefono;
+  O['p_nota'] := Nota;
+  R := await(TApiResponse, THttp.Send('POST', '/rest/v1/rpc/crear_deudor',
+    TJSJSON.stringify(O), TSession.Token));
+  Result.Ok := R.Ok;
+  if R.Ok then
+  begin
+    Result.Id := Trunc(Double(TJSJSON.parse(R.Body)));
+    Exit;
+  end;
+
+  console.log('Error BD ' + IntToStr(R.Status) + ': ' + R.Body);
+  if Pos('no autorizado', R.Body) > 0 then
+    Result.Error := 'Tu usuario no es admin, no puede crear deudores.'
+  else
+    case R.Status of
+      0:   Result.Error := 'Sin conexión. El deudor NO se creó; intenta de nuevo.';
+      401: Result.Error := 'Tu sesión venció. Vuelve a iniciar sesión.';
+    else
+      Result.Error := 'No se pudo crear el deudor (' + IntToStr(R.Status) + ').';
     end;
 end;
 

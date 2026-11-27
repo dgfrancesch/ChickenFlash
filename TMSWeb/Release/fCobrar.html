@@ -1,4 +1,4 @@
-<html>
+﻿<html>
   <head>
   <meta charset="UTF-8">
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
@@ -15,6 +15,7 @@
   <symbol id="cb-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20M6 15h4"/></symbol>
   <symbol id="cb-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 16v-4.5M12 8h.01"/></symbol>
   <symbol id="cb-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+  <symbol id="cb-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
   <symbol id="cb-swap" viewBox="0 0 24 24"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></symbol>
 </svg>
 
@@ -33,63 +34,94 @@
         <small id="cbItems"></small>
       </div>
 
-      <div class="cb-row"><b>Forma de pago</b><span>Puedes dividirlo</span></div>
-      <div class="cb-quick">
-        <button id="cbAllCash" type="button"><svg class="cb-i"><use href="#cb-cash"/></svg>Todo en efectivo</button>
-        <button id="cbAllTrf" type="button"><svg class="cb-i"><use href="#cb-bank"/></svg>Todo transferencia</button>
-      </div>
-
-      <div class="cb-pay">
-        <div class="cb-ic g"><svg class="cb-i"><use href="#cb-cash"/></svg></div>
-        <div class="cb-lbl"><b>Efectivo</b><small>CUP</small></div>
-        <input id="cbCash" inputmode="decimal" placeholder="0" autocomplete="off">
-      </div>
-
-      <div class="cb-fxbox">
-        <div class="cb-fxtop">
-          <div class="cb-ic y"><svg class="cb-i"><use href="#cb-coin"/></svg></div>
-          <div class="cb-lbl"><b>Divisa en efectivo</b><small id="cbFxEq"></small></div>
-          <input id="cbFx" inputmode="decimal" placeholder="0" autocomplete="off">
-        </div>
-        <div class="cb-chips" id="cbFxSeg"><button type="button" data-c="USD" class="sel">USD</button><button type="button" data-c="EUR">EUR</button></div>
-      </div>
-
-      <div class="cb-pay">
-        <div class="cb-ic b"><svg class="cb-i"><use href="#cb-bank"/></svg></div>
-        <div class="cb-lbl"><b>Transferencia</b><small>CUP</small></div>
-        <input id="cbTrf" inputmode="decimal" placeholder="0" autocomplete="off">
-      </div>
-
-      <div class="cb-pay">
-        <div class="cb-ic v"><svg class="cb-i"><use href="#cb-card"/></svg></div>
-        <div class="cb-lbl"><b>MLC</b><small id="cbMlcEq"></small></div>
-        <input id="cbMlc" inputmode="decimal" placeholder="0" autocomplete="off">
-      </div>
-
-      <div class="cb-rate"><svg class="cb-i"><use href="#cb-info"/></svg><span id="cbRates"></span></div>
-      <div class="cb-tag"><span>Efectivo <b id="cbSumCash">0 CUP</b></span><span>Transferencia <b id="cbSumTrf">0 CUP</b></span></div>
-
-      <div class="cb-bar"><i id="cbFill"></i></div>
-      <div class="cb-status" id="cbStatus"></div>
-
-      <label class="cb-keep cb-hide" id="cbKeep">
-        <input type="checkbox" id="cbDejar">
-        <span>El cliente me deja el vuelto <b id="cbDejarAmt"></b><small>Se queda en caja como ganancia</small></span>
+      <label class="cb-keep" id="cbDebtBox">
+        <input type="checkbox" id="cbADeuda">
+        <span>Venta a deuda<small>El cliente se lo lleva y paga después</small></span>
       </label>
 
-      <div class="cb-chg cb-hide" id="cbChg">
-        <p><svg class="cb-i"><use href="#cb-swap"/></svg>El cliente pag&oacute; con divisa. &iquest;El vuelto en qu&eacute; moneda?</p>
-        <div class="cb-chips" id="cbChgSeg"><button type="button" data-c="CUP" class="sel">CUP</button><button type="button" data-c="USD">USD</button><button type="button" data-c="EUR">EUR</button></div>
-        <div class="cb-brk cb-hide" id="cbBrk">
-          <div><span id="cbChFxL">Entregas en divisa</span><input id="cbChFx" inputmode="decimal" placeholder="0" autocomplete="off"></div>
-          <div><span>Quilos en CUP</span><input id="cbChCup" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+      <section class="card cb-hide" id="cbDeuda">
+        <div class="card-head">
+          <h2>Seleccionar deudor</h2>
+          <button type="button" class="btn-new" id="btnToggleNew">+ Nuevo deudor</button>
         </div>
-        <small id="cbChgAmt"></small>
-      </div>
+        <label class="search">
+          <svg class="cb-i"><use href="#cb-search"></use></svg>
+          <input id="buscaDeudor" type="search" placeholder="Buscar deudor..." autocomplete="off">
+        </label>
+        <div class="new-box cb-hide" id="newBox">
+          <input type="text" class="inp" id="newNombre" placeholder="Nombre completo *">
+          <input type="tel" class="inp" id="newTel" placeholder="Teléfono (opcional)">
+          <input type="text" class="inp" id="newNota" placeholder="Nota (opcional, ej. vecino frente al parque)">
+          <div class="new-actions">
+            <button type="button" class="btn-sec" id="btnCancelNew">Cancelar</button>
+            <button type="button" class="btn-save" id="btnSaveNew">Crear y elegir</button>
+          </div>
+        </div>
+        <div class="cb-status" id="cbDeudorSel"></div>
+        <div class="d-list" id="dList"></div>
+      </section>
+
+      <div id="cbPagoSec">
+
+        <div class="cb-row"><b>Forma de pago</b><span>Puedes dividirlo</span></div>
+        <div class="cb-quick" id="cbQuick">
+          <button id="cbAllCash" type="button"><svg class="cb-i"><use href="#cb-cash"/></svg>Todo en efectivo</button>
+          <button id="cbAllTrf" type="button"><svg class="cb-i"><use href="#cb-bank"/></svg>Todo transferencia</button>
+        </div>
+
+        <div class="cb-pay">
+          <div class="cb-ic g"><svg class="cb-i"><use href="#cb-cash"/></svg></div>
+          <div class="cb-lbl"><b>Efectivo</b><small>CUP</small></div>
+          <input id="cbCash" inputmode="decimal" placeholder="0" autocomplete="off">
+        </div>
+
+        <div class="cb-fxbox">
+          <div class="cb-fxtop">
+            <div class="cb-ic y"><svg class="cb-i"><use href="#cb-coin"/></svg></div>
+            <div class="cb-lbl"><b>Divisa en efectivo</b><small id="cbFxEq"></small></div>
+            <input id="cbFx" inputmode="decimal" placeholder="0" autocomplete="off">
+          </div>
+          <div class="cb-chips" id="cbFxSeg"><button type="button" data-c="USD" class="sel">USD</button><button type="button" data-c="EUR">EUR</button></div>
+        </div>
+
+        <div class="cb-pay">
+          <div class="cb-ic b"><svg class="cb-i"><use href="#cb-bank"/></svg></div>
+          <div class="cb-lbl"><b>Transferencia</b><small>CUP</small></div>
+          <input id="cbTrf" inputmode="decimal" placeholder="0" autocomplete="off">
+        </div>
+
+        <div class="cb-pay">
+          <div class="cb-ic v"><svg class="cb-i"><use href="#cb-card"/></svg></div>
+          <div class="cb-lbl"><b>MLC</b><small id="cbMlcEq"></small></div>
+          <input id="cbMlc" inputmode="decimal" placeholder="0" autocomplete="off">
+        </div>
+
+        <div class="cb-rate"><svg class="cb-i"><use href="#cb-info"/></svg><span id="cbRates"></span></div>
+        <div class="cb-tag"><span>Efectivo <b id="cbSumCash">0 CUP</b></span><span>Transferencia <b id="cbSumTrf">0 CUP</b></span></div>
+
+        <div class="cb-bar"><i id="cbFill"></i></div>
+        <div class="cb-status" id="cbStatus"></div>
+
+        <label class="cb-keep cb-hide" id="cbKeep">
+          <input type="checkbox" id="cbDejar">
+          <span>El cliente me deja el vuelto <b id="cbDejarAmt"></b><small>Se queda en caja como ganancia</small></span>
+        </label>
+
+        <div class="cb-chg cb-hide" id="cbChg">
+          <p><svg class="cb-i"><use href="#cb-swap"/></svg>El cliente pag&oacute; con divisa. &iquest;El vuelto en qu&eacute; moneda?</p>
+          <div class="cb-chips" id="cbChgSeg"><button type="button" data-c="CUP" class="sel">CUP</button><button type="button" data-c="USD">USD</button><button type="button" data-c="EUR">EUR</button></div>
+          <div class="cb-brk cb-hide" id="cbBrk">
+            <div><span id="cbChFxL">Entregas en divisa</span><input id="cbChFx" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+            <div><span>Quilos en CUP</span><input id="cbChCup" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+          </div>
+          <small id="cbChgAmt"></small>
+        </div>
+
+      </div><!-- /cbPagoSec -->
 
       <div class="cb-msg" id="cbMsg"></div>
       <button class="cb-cta" id="cbOk" type="button"><svg class="cb-i"><use href="#cb-check"/></svg>Confirmar venta</button>
-    </div>
+    </div><!-- /cbForm -->
 
     <div class="cb-done cb-hide" id="cbDone">
       <div class="cb-ic"><svg class="cb-i"><use href="#cb-check"/></svg></div>

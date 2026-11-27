@@ -16,6 +16,32 @@ object Form6: TForm6
     WidthStyle = ssAuto
     WidthPercent = 100.000000000000000000
   end
+  object cbKeep: TWebLabel
+    Left = 101
+    Top = 150
+    Width = 84
+    Height = 15
+    ElementID = 'cbKeep'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object cbDebtBox: TWebLabel
+    Left = 303
+    Top = 180
+    Width = 106
+    Height = 15
+    ElementID = 'cbDebtBox'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
   object cbForm: TWebHTMLDiv
     Left = -1
     Top = -1
@@ -334,6 +360,186 @@ object Form6: TForm6
     HeightStyle = ssAuto
     WidthStyle = ssAuto
     ChildOrder = 24
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object btnCancelNew: TWebButton
+    Left = 101
+    Top = 120
+    Width = 96
+    Height = 25
+    ChildOrder = 25
+    ElementID = 'btnCancelNew'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object cbDejar: TWebCheckBox
+    Left = 202
+    Top = 120
+    Width = 96
+    Height = 25
+    Caption = 'cbDejar'
+    ChildOrder = 26
+    ElementID = 'cbDejar'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object buscaDeudor: TWebEdit
+    Left = 303
+    Top = 120
+    Width = 96
+    Height = 25
+    ChildOrder = 27
+    ElementID = 'buscaDeudor'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object newTel: TWebEdit
+    Left = 404
+    Top = 120
+    Width = 96
+    Height = 25
+    ChildOrder = 28
+    ElementID = 'newTel'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object newNombre: TWebEdit
+    Left = 505
+    Top = 120
+    Width = 96
+    Height = 25
+    ChildOrder = 29
+    ElementID = 'newNombre'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object newBox: TWebHTMLDiv
+    Left = 0
+    Top = 150
+    Width = 96
+    Height = 25
+    ElementID = 'newBox'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 30
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object cbPagoSec: TWebHTMLDiv
+    Left = 202
+    Top = 150
+    Width = 96
+    Height = 25
+    ElementID = 'cbPagoSec'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 32
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object btnSaveNew: TWebButton
+    Left = 303
+    Top = 150
+    Width = 96
+    Height = 25
+    ChildOrder = 33
+    ElementID = 'btnSaveNew'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object cbADeuda: TWebCheckBox
+    Left = 404
+    Top = 150
+    Width = 96
+    Height = 25
+    Caption = 'cbADeuda'
+    ChildOrder = 34
+    ElementID = 'cbADeuda'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object newNota: TWebEdit
+    Left = 505
+    Top = 150
+    Width = 96
+    Height = 25
+    ChildOrder = 35
+    ElementID = 'newNota'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object btnToggleNew: TWebButton
+    Left = 0
+    Top = 180
+    Width = 96
+    Height = 25
+    ChildOrder = 36
+    ElementID = 'btnToggleNew'
+    ElementFont = efCSS
+    ElementPosition = epIgnore
+    HeightStyle = ssAuto
+    HeightPercent = 100.000000000000000000
+    WidthStyle = ssAuto
+    WidthPercent = 100.000000000000000000
+  end
+  object dList: TWebHTMLDiv
+    Left = 101
+    Top = 180
+    Width = 96
+    Height = 25
+    ElementID = 'dList'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 37
+    ElementPosition = epIgnore
+    ElementFont = efCSS
+    Role = ''
+  end
+  object cbDeudorSel: TWebHTMLDiv
+    Left = 202
+    Top = 180
+    Width = 96
+    Height = 25
+    ElementID = 'cbDeudorSel'
+    HeightStyle = ssAuto
+    WidthStyle = ssAuto
+    ChildOrder = 38
     ElementPosition = epIgnore
     ElementFont = efCSS
     Role = ''

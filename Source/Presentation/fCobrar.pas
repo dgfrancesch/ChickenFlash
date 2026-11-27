@@ -1,8 +1,8 @@
 unit fCobrar;
 
 // Pantalla de cobro (ruta #/cobrar). Lee la venta armada en el dashboard desde
-// sessionStorage ('venta'), deja elegir la forma de pago y al confirmar la guarda
-// en la base de datos (registrar_venta) y muestra el resumen.
+// sessionStorage ('venta'), deja elegir la forma de pago (o venta a deuda) y al
+// confirmar la guarda en la base de datos y muestra el resumen.
 // Las tasas salen de elToque (uTasas); las monedas fijadas a mano en Ajustes usan
 // la tasa del usuario. Al abrir se usa la última guardada y se consulta elToque;
 // si responde, se actualiza la pantalla; si no, se queda la guardada.
@@ -41,6 +41,21 @@ type
     cbBrk: TWebHTMLDiv;
     cbFxSeg: TWebHTMLDiv;
     cbRates: TWebHTMLSpan;
+    btnCancelNew: TWebButton;
+    cbDejar: TWebCheckBox;
+    buscaDeudor: TWebEdit;
+    newTel: TWebEdit;
+    newNombre: TWebEdit;
+    newBox: TWebHTMLDiv;
+    cbKeep: TWebLabel;
+    cbPagoSec: TWebHTMLDiv;
+    btnSaveNew: TWebButton;
+    cbADeuda: TWebCheckBox;
+    newNota: TWebEdit;
+    btnToggleNew: TWebButton;
+    dList: TWebHTMLDiv;
+    cbDeudorSel: TWebHTMLDiv;
+    cbDebtBox: TWebLabel;
     procedure WebFormCreate(Sender: TObject);
   private
     [async]
@@ -54,7 +69,7 @@ var
 implementation
 
 uses
-  uShell, uTasas, uVentasService;
+  uShell, uTasas, uVentasService, uDeudasService;
 
 {$R *.dfm}
 
@@ -98,7 +113,10 @@ end;
 
 type
   TGuardarFn = procedure(const Json: string; Cb: TJSFunction);
+  TCargarFn = procedure(Cb: TJSFunction);
+    TCrearFn = procedure(const Nombre, Tel, Nota: string; Cb: TJSFunction);
 
+// ---------- Venta normal ----------
 [async]
 procedure GuardarInterno(const Json: string; Cb: TJSFunction);
 var
@@ -124,16 +142,79 @@ begin
   GuardarInterno(Json, Cb);   // llamar a una async desde una no async es válido
 end;
 
-procedure PonerGuardar;
+
+[async]
+procedure CargarDeudoresInterno(Cb: TJSFunction);
 var
-  Fn: TGuardarFn;
+  R: TResultadoDeudas;
+  Ok: Boolean;
+  Js, Err: string;
 begin
-  Fn := @GuardarPuente;
+  try
+    R := await(TResultadoDeudas, TDeudasService.Cargar);
+    Ok := R.Ok;
+    Js := R.Json;
+    Err := R.Error;
+  except
+    Ok := False;
+    Js := '[]';
+    Err := 'No se pudieron cargar los deudores.';
+  end;
   asm
-    window.CFGuardar = Fn;
+    Cb(Ok, Js, Err);
   end;
 end;
 
+procedure CargarDeudoresPuente(Cb: TJSFunction);
+begin
+  CargarDeudoresInterno(Cb);
+end;
+
+[async]
+procedure CrearDeudorInterno(const Nombre, Tel, Nota: string; Cb: TJSFunction);
+var
+  R: TResultadoDeudor;
+  Ok: Boolean;
+  Id: Integer;
+  Err: string;
+begin
+  try
+    R := await(TResultadoDeudor, TDeudasService.Crear(Nombre, Tel, Nota));
+    Ok := R.Ok;
+    Id := R.Id;
+    Err := R.Error;
+  except
+    Ok := False;
+    Id := 0;
+    Err := 'No se pudo crear el deudor. Intenta de nuevo.';
+  end;
+  asm
+    Cb(Ok, Id, Err);
+  end;
+end;
+
+procedure CrearDeudorPuente(const Nombre, Tel, Nota: string; Cb: TJSFunction);
+begin
+  CrearDeudorInterno(Nombre, Tel, Nota, Cb);
+end;
+
+procedure PonerGuardar;
+var
+  Fn: TGuardarFn;
+  FnDeudores: TCargarFn;
+  FnCrear: TCrearFn;
+begin
+  Fn := @GuardarPuente;
+  FnDeudores := @CargarDeudoresPuente;
+  FnCrear := @CrearDeudorPuente;
+  asm
+    window.CFGuardar = Fn;
+    window.CFDeudores = FnDeudores;
+    window.CFCrearDeudor = FnCrear;
+  end;
+end;
+
+// Toda la logica de la pantalla esta en JavaScript dentro de un asm.
 // Toda la logica de la pantalla esta en JavaScript dentro de un asm.
 procedure InstalarCobro;
 begin
@@ -150,6 +231,7 @@ begin
       var R = { USD: 400, EUR: 430, MLC: 280 };
       var MAN = { USD: false, EUR: false, MLC: false };
       var fxC = 'USD', chC = 'CUP', man = null, dejar = false, guardando = false;
+      var aDeuda = false, deudores = [], deudor = null, cargados = false;
 
       var n = function (id) {
         var v = parseFloat(String(g(id).value).replace(',', '.'));
@@ -235,13 +317,21 @@ begin
         g('cbSumTrf').textContent = fa(c.st) + ' CUP';
         var fill = g('cbFill'), s = g('cbStatus');
         fill.style.width = Math.min(100, TOTAL > 0 ? c.paid / TOTAL * 100 : 0) + '%';
-        var hayVuelto = c.diff > 0.005;
+        var hayVuelto = !aDeuda && c.diff > 0.005;
         if (!hayVuelto) { dejar = false; g('cbDejar').checked = false; }
         g('cbKeep').classList.toggle('cb-hide', !hayVuelto);
         g('cbDejarAmt').textContent = '(' + fa(c.diff) + ' CUP)';
         var showChg = hayVuelto && c.fx > 0 && !dejar;
         if (!(hayVuelto && c.fx > 0) && chC !== 'CUP') { chC = 'CUP'; sel('cbChgSeg', 'CUP'); }
-        if (c.diff < -0.005) {
+        if (aDeuda) {
+          if (c.diff >= -0.005) {
+            fill.style.background = 'var(--cb-warn)'; s.style.color = 'var(--cb-warn)';
+            s.textContent = 'El pago cubre el total: desmarca venta a deuda';
+          } else {
+            fill.style.background = 'var(--cb-gold)'; s.style.color = 'var(--cb-gold)';
+            s.textContent = 'Queda a deuda: ' + fa(-c.diff) + ' CUP';
+          }
+        } else if (c.diff < -0.005) {
           fill.style.background = 'var(--cb-warn)'; s.style.color = 'var(--cb-warn)';
           s.textContent = 'Faltan ' + fa(-c.diff) + ' CUP';
         } else if (c.diff <= 0.005) {
@@ -268,6 +358,69 @@ begin
         for (var i = 0; i < ids.length; i++) { g(ids[i]).value = ''; }
         g(id).value = TOTAL;
         upd();
+      };
+
+      // ---------- Venta a deuda ----------
+      var setBtn = function () {
+        var b = g('cbOk');
+        b.lastChild.textContent = aDeuda ? 'Registrar venta a deuda' : 'Confirmar venta';
+      };
+
+      var pintar = function () {
+        var q = String(g('buscaDeudor').value || '').trim().toLowerCase();
+        var l = g('dList');
+        l.innerHTML = '';
+        deudores.forEach(function (d) {
+          if (q && String(d.nombre || '').toLowerCase().indexOf(q) < 0) { return; }
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'd-item' + (deudor && !deudor.nuevo && deudor.id === d.id ? ' sel' : '');
+          b.setAttribute('data-id', d.id);
+          var s = document.createElement('b');
+          s.textContent = d.nombre;
+          var t = document.createElement('small');
+          var saldo = d.saldo_cup != null ? d.saldo_cup : d.saldo;
+          t.textContent = (d.nota ? d.nota + ' \u00b7 ' : '') + 'Debe ' + fa(Number(saldo || 0)) + ' CUP';
+          b.appendChild(s); b.appendChild(t);
+          l.appendChild(b);
+        });
+        if (!l.children.length) { l.textContent = cargados ? 'Sin resultados' : 'Cargando...'; }
+        var sl = g('cbDeudorSel');
+        sl.textContent = deudor ? 'Deudor: ' + deudor.nombre + (deudor.nuevo ? ' (nuevo)' : '') : '';
+      };
+
+      var cargarDeudores = function () {
+        if (cargados) { pintar(); return; }
+        pintar();
+        window.CFDeudores(function (ok, json, error) {
+          if (!ok) { g('cbMsg').textContent = error || 'No se pudieron cargar los deudores.'; return; }
+          try { deudores = JSON.parse(json) || []; } catch (e) { deudores = []; }
+          cargados = true;
+          pintar();
+        });
+      };
+
+      var setDeuda = function (v) {
+        aDeuda = v;
+        g('cbQuick').classList.toggle('cb-hide', v);
+        g('cbDeuda').classList.toggle('cb-hide', !v);
+        setBtn();
+        upd();
+        if (v) { cargarDeudores(); }
+      };
+
+      var mostrarHechoDeuda = function (c) {
+        var L = [['Total', '<b>' + fa(TOTAL) + ' CUP</b>']];
+        if (c.paid > 0.005) { L.push(['Abono inicial', '<b>' + fa(c.paid) + ' CUP</b>']); }
+        L.push(['Queda a deuda', '<b>' + fa(-c.diff) + ' CUP</b>']);
+        g('cbDoneTxt').innerHTML = L.map(function (x) { return x[0] + ': ' + x[1]; }).join('<br>') +
+          '<br>Deudor: <b id="cbDoneDeudor"></b>';
+        g('cbDoneTxt').querySelector('#cbDoneDeudor').textContent = deudor.nombre;
+        try { sessionStorage.removeItem('venta'); } catch (e) { }
+        g('cbMsg').textContent = '';
+        g('cbForm').classList.add('cb-hide');
+        g('cbDone').classList.remove('cb-hide');
+        root.scrollTop = 0;
       };
 
       var abrir = function () {
@@ -300,8 +453,10 @@ begin
         g('cbNet').textContent = navigator.onLine ? 'En l\u00ednea' : 'Sin conexi\u00f3n';
         g('cbNet').style.color = navigator.onLine ? '' : 'var(--cb-warn)';
         dejar = false; g('cbDejar').checked = false;
+        aDeuda = false; g('cbADeuda').checked = false;
         sel('cbFxSeg', 'USD'); sel('cbChgSeg', 'CUP');
         upd();
+        setBtn();
         root.classList.add('cb-open');
         root.scrollTop = 0;
         return true;
@@ -349,11 +504,19 @@ begin
       var confirmar = function () {
         if (guardando) { return; }
         var c = calc();
-        if (c.diff < -0.005) {
+        if (!aDeuda && c.diff < -0.005) {
           g('cbMsg').textContent = 'A\u00fan faltan ' + fa(-c.diff) + ' CUP para completar el pago.';
           return;
         }
-                var items = [], falta = false;
+        if (aDeuda && !deudor) {
+          g('cbMsg').textContent = 'Elige o crea un deudor.';
+          return;
+        }
+        if (aDeuda && c.diff >= -0.005) {
+          g('cbMsg').textContent = 'El pago cubre el total. Desmarca "Venta a deuda" o baja el abono.';
+          return;
+        }
+        var items = [], falta = false;
         for (var i = 0; i < VENTA.items.length; i++) {
           var it = VENTA.items[i];
           var pid = it.producto_id || it.id;
@@ -368,15 +531,23 @@ begin
           g('cbMsg').textContent = 'Faltan producto_id o precio en la venta. Hay que guardarlos desde el dashboard.';
           return;
         }
-               guardando = true;
+        guardando = true;
         g('cbOk').disabled = true;
         g('cbMsg').textContent = 'Guardando...';
-        var payload = JSON.stringify({ id: VENTA.uid, total_cup: TOTAL, items: items, pagos: armarPagos(c) });
-        window.CFGuardar(payload, function (ok, error) {
+
+        var pl = { id: VENTA.uid, total_cup: TOTAL, items: items, pagos: armarPagos(c) };
+        if (aDeuda) {
+          if (deudor.nuevo) {
+            pl.deudor_nuevo = { nombre: deudor.nombre, telefono: deudor.telefono || '', nota: deudor.nota || '' };
+          } else {
+            pl.deudor_id = Number(deudor.id);
+          }
+        }
+        window.CFGuardar(JSON.stringify(pl), function (ok, error) {
           guardando = false;
           g('cbOk').disabled = false;
           if (!ok) { g('cbMsg').textContent = error || 'No se pudo guardar la venta.'; return; }
-          mostrarHecho(c);
+          if (aDeuda) { mostrarHechoDeuda(c); } else { mostrarHecho(c); }
         });
       };
 
@@ -388,16 +559,37 @@ begin
         else if (id === 'cbAllCash') { setAll('cbCash'); }
         else if (id === 'cbAllTrf') { setAll('cbTrf'); }
         else if (id === 'cbOk') { confirmar(); }
+        else if (id === 'btnToggleNew') { g('newBox').classList.toggle('cb-hide'); }
+        else if (id === 'btnCancelNew') { g('newBox').classList.add('cb-hide'); }
+        else if (id === 'btnSaveNew') {
+          var nom = String(g('newNombre').value).trim();
+          if (!nom) { g('cbMsg').textContent = 'Escribe el nombre del deudor.'; return; }
+          deudor = { nuevo: true, nombre: nom,
+                     telefono: String(g('newTel').value).trim(),
+                     nota: String(g('newNota').value).trim() };
+          g('newBox').classList.add('cb-hide');
+          g('cbMsg').textContent = '';
+          pintar();
+        }
+        else if (pid === 'dList') {
+          var sid = b.getAttribute('data-id');
+          deudor = deudores.filter(function (x) { return String(x.id) === sid; })[0] || null;
+          g('cbMsg').textContent = '';
+          pintar();
+        }
         else if (pid === 'cbFxSeg') { fxC = b.getAttribute('data-c'); sel('cbFxSeg', fxC); upd(); }
         else if (pid === 'cbChgSeg') { chC = b.getAttribute('data-c'); sel('cbChgSeg', chC); upd(); }
       });
 
       root.addEventListener('change', function (e) {
-        if (e.target && e.target.id === 'cbDejar') { dejar = !!e.target.checked; upd(); }
+        if (!e.target) { return; }
+        if (e.target.id === 'cbDejar') { dejar = !!e.target.checked; upd(); }
+        else if (e.target.id === 'cbADeuda') { setDeuda(!!e.target.checked); }
       });
 
       root.addEventListener('input', function (e) {
         var id = e.target ? e.target.id : '';
+        if (id === 'buscaDeudor') { pintar(); return; }
         if (id === 'cbCash' || id === 'cbFx' || id === 'cbTrf' || id === 'cbMlc') { upd(); }
         else if (id === 'cbChFx') { man = { field: 'fx', v: n('cbChFx') }; fillSplit('fx'); }
         else if (id === 'cbChCup') { man = { field: 'cup', v: n('cbChCup'), fx: n('cbChFx') }; fillSplit('cup'); }
@@ -444,7 +636,7 @@ begin
   else
     Estado := 'consultando...';
   PonerTasas(T.EfUsd, T.EfEur, T.EfMlc, T.ManUsd, T.ManEur, T.ManMlc, Estado, T.Origen = 'ejemplo');
-  PonerGuardar;
+  PonerGuardar;                                // incluye los puentes de deuda y deudores
   InstalarCobro;
   ActualizarTasas;
 end;

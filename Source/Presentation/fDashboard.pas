@@ -296,10 +296,13 @@ var
   RP: TResultadoProductos;
   RJ: TResultadoJabas;
   i: Integer;
+  RO: TResultado;
 begin
   divProductos.ElementHandle.innerHTML :=
     '<div class="db-vacio-grid">Cargando productos...</div>';
-
+    // oculta de la BD lo que ya quedó en 0 (limpia los agotados anteriores)
+  RO := await(TResultado, TInventarioService.OcultarAgotados);
+  if TShell.Actual <> Self then Exit;
   RS := await(TResultadoSecciones, TInventarioService.CargarSecciones);
   if TShell.Actual <> Self then Exit;          // ya saliste de esta pantalla
   if not RS.Ok then
@@ -652,7 +655,7 @@ begin
   for i := 0 to High(FProductos) do
   begin
     P := FProductos[i];
-    if not P.Visible then Continue;
+        if (not P.Visible) or (P.Stock <= 0) then Continue;
     if (FSeccionId <> 0) and (P.SeccionId <> FSeccionId) then Continue;
     if (FBusqueda <> '') and (Pos(FBusqueda, Normalizar(P.Nombre)) = 0) then Continue;
 

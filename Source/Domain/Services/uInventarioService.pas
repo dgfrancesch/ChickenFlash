@@ -106,6 +106,8 @@ type
     class function CrearProducto(P: TProductoNuevo): TResultado;
     [async]
     class function ActualizarProducto(Id: Integer; P: TProductoNuevo): TResultado;
+        [async]
+    class function OcultarAgotados: TResultado;
     [async]
     class function ActualizarStock(Id: Integer; Stock: Double): TResultado;
     [async]
@@ -591,6 +593,22 @@ begin
   O := TJSObject.new;
   O['stock'] := Stock;
   R := await(TApiResponse, THttp.Send('PATCH', '/rest/v1/productos?id=eq.' + IntToStr(Id),
+    TJSJSON.stringify(O), Token));
+  Result.Ok := R.Ok;
+  if not R.Ok then
+    Result.Error := MensajeError(R);
+end;
+// Oculta (tienda y vender) todo producto con stock <= 0, en una sola petición
+class function TInventarioService.OcultarAgotados: TResultado;
+var
+  O: TJSObject;
+  R: TApiResponse;
+begin
+  Result := TResultado.Create;
+  O := TJSObject.new;
+  O['visible'] := False;
+  R := await(TApiResponse, THttp.Send('PATCH',
+    '/rest/v1/productos?stock=lte.0&visible=eq.true',
     TJSJSON.stringify(O), Token));
   Result.Ok := R.Ok;
   if not R.Ok then

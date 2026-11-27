@@ -437,18 +437,20 @@ end;
 procedure TForm3.PintarLista;
 var
   Html: string;
-  i, N: Integer;
+  i, N, Pasada: Integer;
   P: TProducto;
 begin
   Html := '';
   N := 0;
-  for i := 0 to High(FProductos) do
-  begin
-    P := FProductos[i];
-    if not Coincide(P) then Continue;
-    Html := Html + TarjetaProducto(P, NombreSeccion(P.SeccionId), JabasDe(P.Id));
-    Inc(N);
-  end;
+    for Pasada := 0 to 1 do
+    for i := 0 to High(FProductos) do
+    begin
+      P := FProductos[i];
+      if (Pasada = 0) <> (P.Stock > 0) then Continue;
+      if not Coincide(P) then Continue;
+      Html := Html + TarjetaProducto(P, NombreSeccion(P.SeccionId), JabasDe(P.Id));
+      Inc(N);
+    end;
 
   if N = 0 then
   begin
